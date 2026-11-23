@@ -48,10 +48,18 @@ jobs:
         run: |
           Set-Location plugin-sdk
           .\tools\premake\premake5.exe --file=tools\premake\premake5.lua vs2022
-          msbuild plugin.sln /m /t:plugin_sa /p:Configuration=Release /p:Platform=Win32 /v:minimal
-          Get-ChildItem -Path "output\lib"
-          if (-not (Test-Path "output\lib\plugin.lib") -and (Test-Path "output\lib\plugin_sa.lib")) {
-              Copy-Item "output\lib\plugin_sa.lib" "output\lib\plugin.lib"
+          Get-Content plugin.sln | Select-String "ConfigurationPlatforms" -Context 0,5
+          msbuild plugin.sln /m /t:Plugin_SA /p:Configuration=Release /v:minimal
+          if (Test-Path "output") {
+              Get-ChildItem -Path "output" -Recurse -Filter "*.lib"
+          }
+          if (Test-Path "output\lib") {
+              $libs = Get-ChildItem -Path "output\lib" -Filter "*.lib"
+              Write-Host "Found libs in output/lib: $($libs.Name)"
+              if (-not (Test-Path "output\lib\plugin.lib") -and ($libs.Count -gt 0)) {
+                  Copy-Item $libs[0].FullName "output\lib\plugin.lib"
+                  Write-Host "Copied $($libs[0].Name) to plugin.lib"
+              }
           }
 
       - name: Build CheatMenuSA Solution
