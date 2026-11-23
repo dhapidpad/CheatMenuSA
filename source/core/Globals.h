@@ -1,5 +1,15 @@
 #pragma once
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+
 // base plugin-sdk headers
 #include "plugin.h"
 #include "CWorld.h"
@@ -23,10 +33,6 @@
 #include "eModelID.h"
 
 // system & stl
-#define WIN32_LEAN_AND_MEAN
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
 #include <intrin.h>
 #include <memory>
 #include <vector>
