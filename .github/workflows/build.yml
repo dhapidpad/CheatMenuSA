@@ -1,0 +1,78 @@
+name: Build CheatMenuSA
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Release (Win32)
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Install DirectX 9 SDK (D3DX) via NuGet
+        shell: pwsh
+        run: |
+          nuget install Microsoft.DXSDK.D3DX -Version 9.29.952.8 -OutputDirectory packages
+          $nativePkg = Get-ChildItem -Path "packages/Microsoft.DXSDK.D3DX*/build/native" | Select-Object -First 1
+          if ($null -eq $nativePkg) {
+              Write-Error "Could not find Microsoft.DXSDK.D3DX native folder"
+              exit 1
+          }
+          $nativePath = $nativePkg.FullName
+          Write-Host "DirectX SDK Native Path: $nativePath"
+          "DXSDK_DIR=$nativePath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Clone Plugin-SDK
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/DK22Pac/plugin-sdk.git plugin-sdk
+          $sdkPath = (Resolve-Path "plugin-sdk").Path
+          Write-Host "Plugin-SDK Path: $sdkPath"
+          "PLUGIN_SDK_DIR=$sdkPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Generate and Build Plugin-SDK for GTA San Andreas
+        shell: pwsh
+        run: |
+          Set-Location plugin-sdk
+          .\tools\premake\premake5.exe vs2022
+          msbuild plugin.sln /m /p:Configuration=Release /p:Platform=Win32 /v:minimal
+          if (-not (Test-Path "output\lib\plugin.lib") -and (Test-Path "output\lib\plugin_sa.lib")) {
+              Copy-Item "output\lib\plugin_sa.lib" "output\lib\plugin.lib"
+          }
+          Get-ChildItem -Path "output\lib"
+
+      - name: Build CheatMenuSA Solution
+        shell: pwsh
+        run: |
+          msbuild project_files\CheatMenu.sln /m /p:Configuration=Release /p:Platform=Win32 /v:minimal
+
+      - name: Verify Output
+        shell: pwsh
+        run: |
+          if (Test-Path "output\asi\CheatMenuSA.asi") {
+              Write-Host "Successfully generated CheatMenuSA.asi!"
+              Get-Item "output\asi\CheatMenuSA.asi" | Select-Object Name, Length, LastWriteTime
+          } else {
+              Write-Error "CheatMenuSA.asi was not found in output\asi!"
+              exit 1
+          }
+
+      - name: Upload CheatMenuSA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CheatMenuSA-Release
+          path: output/asi/CheatMenuSA.asi
+          if-no-files-found: error
