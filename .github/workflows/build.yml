@@ -80,7 +80,9 @@ jobs:
         run: |
           if (Test-Path "output\asi\CheatMenuSA.asi") {
               Write-Host "Successfully generated CheatMenuSA.asi!"
-              Get-Item "output\asi\CheatMenuSA.asi" | Select-Object Name, Length, LastWriteTime
+              Copy-Item "output\asi\CheatMenuSA.asi" "output\asi\CheatMenuSA.dll" -Force
+              Write-Host "Generated CheatMenuSA.dll for DLL Injectors!"
+              Get-Item "output\asi\CheatMenuSA.asi", "output\asi\CheatMenuSA.dll" | Select-Object Name, Length, LastWriteTime
           } else {
               Write-Error "CheatMenuSA.asi was not found in output\asi!"
               exit 1
@@ -90,5 +92,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CheatMenuSA-Release
-          path: output/asi/CheatMenuSA.asi
+          path: |
+            output/asi/CheatMenuSA.asi
+            output/asi/CheatMenuSA.dll
           if-no-files-found: error

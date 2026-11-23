@@ -10,6 +10,7 @@
 using namespace plugin;
 
 static CdeclEvent<AddressList<0x53C23A, H_JUMP>, PRIORITY_AFTER, ArgPickNone, void()> preRenderWaterEvent;
+static bool s_isInitialized = false;
 
 class CheatMenuPlugin
 {
@@ -36,10 +37,27 @@ public:
 			Events::gameProcessEvent.AddAfter(on_game_process);
 			Events::drawingEvent.AddAfter(on_draw);
 		}
+
+		// Support for DLL Injection while game is already running (Late / Runtime Injection)
+		__try {
+			if (*(void**)0xC97C28 != nullptr || RsGlobal.maximumWidth > 0)
+			{
+				on_init();
+			}
+		} __except(EXCEPTION_EXECUTE_HANDLER) {}
+	}
+
+	~CheatMenuPlugin()
+	{
+		on_shutdown();
 	}
 
 	static void on_init()
 	{
+		if (s_isInitialized)
+			return;
+		s_isInitialized = true;
+
 		g_Renderer = std::make_shared<Renderer>();
 		g_Config   = std::make_shared<Config>();
 		g_Input    = std::make_shared<Input>();
@@ -74,6 +92,10 @@ public:
 
 	static void on_shutdown()
 	{
+		if (!s_isInitialized)
+			return;
+		s_isInitialized = false;
+
 		hooks::uninstall();
 
 		SafeReset(g_Features);

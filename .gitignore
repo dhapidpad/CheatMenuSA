@@ -37,6 +37,7 @@ bld/
 [Oo]utput/
 [Aa]si/
 *.asi
+*.dll
 *.exp
 *.lib
 

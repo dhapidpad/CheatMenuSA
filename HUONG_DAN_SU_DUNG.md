@@ -151,10 +151,45 @@ python scripts/mcp_client.py cheat combat.infinite_ammo true
 
 ---
 
-## 🚀 5. HƯỚNG DẪN CÀI ĐẶT THỦ CÔNG
+## 🚀 5. HƯỚNG DẪN CÀI ĐẶT THỦ CÔNG (DẠNG ASI MOD)
 
 1. Tải tệp `CheatMenuSA.asi` từ thư mục Release hoặc thư mục `bin_release/`.
 2. Sao chép tệp `CheatMenuSA.asi` vào thư mục cài đặt GTA San Andreas / GSOCity:
    - Đường dẫn: `D:\Program Files\GSOCity\GTA\` hoặc `D:\Program Files\GSOCity\GTA\scripts\`
 3. Đảm bảo game đã có file `vorbisFile.dll` (hoặc `dinput8.dll`) ASI Loader.
 4. Khởi động game, nhấn phím **`INSERT`** hoặc **`F11`** để trải nghiệm giao diện đẳng cấp!
+
+---
+
+## 💉 6. HƯỚNG DẪN SỬ DỤNG KIỂU INJECT (DLL INJECTION VÀO TIẾN TRÌNH)
+
+> 💡 **Bản chất kỹ thuật:** File `.asi` thực chất là một file `.dll` tiêu chuẩn của Windows (chỉ khác phần mở rộng đuôi file). Từ phiên bản này, CheatMenuSA đã được tích hợp công nghệ **Runtime / Late Injection** — cho phép bạn inject file `CheatMenuSA.dll` vào game **bất cứ lúc nào khi game đang chạy** mà không làm crash hay đơ game.
+
+### Ưu điểm khi dùng kiểu Inject:
+- **Game sạch 100%:** Không cần copy bất kỳ file nào vào thư mục cài đặt `D:\Program Files\GSOCity\GTA\`.
+- **Linh hoạt:** Đang chơi game dở chỉ cần bấm Inject là menu hiện lên ngay. Khi chơi xong bấm **`DELETE`** để giải phóng bộ nhớ (Panic/Unload) an toàn.
+- **Tránh kiểm tra file:** Không để lại dấu vết file lạ trong thư mục game.
+
+### Cách 1: Sử dụng Xenos Injector (Khuyên dùng - Chuẩn Mod Game)
+1. Tải và mở **Xenos Injector** (chạy bằng quyền Administrator).
+2. Tại mục **Process**, chọn `Existing` và chọn tiến trình `gta_sa.exe` (hoặc gõ `gta_sa.exe`).
+3. Nhấn nút **Add** trong mục *Images* và trỏ tới file **`CheatMenuSA.dll`** (hoặc `CheatMenuSA.asi`).
+4. Tại mục *Type*, chọn `Native (CreateThread)` hoặc `Manual map`.
+5. Nhấn **Inject**!
+6. Quay lại cửa sổ game, nhấn phím **`INSERT`** hoặc **`F11`** để mở menu!
+
+### Cách 2: Sử dụng Cheat Engine
+1. Mở game GSOCity / GTA SA.
+2. Mở **Cheat Engine** -> Bấm biểu tượng máy tính ở góc trên bên trái -> Chọn tiến trình `gta_sa.exe`.
+3. Bấm vào nút **Memory View** (hoặc tổ hợp phím `Ctrl + M`).
+4. Trên thanh menu trên cùng của cửa sổ Memory View, chọn **Tools** -> **Inject DLL**.
+5. Chọn tệp **`CheatMenuSA.dll`**. Khi Cheat Engine hỏi thực thi hàm, chọn **Yes**.
+6. Vào lại game và nhấn **`INSERT`** để kích hoạt menu!
+
+### Cách 3: Sử dụng Process Hacker / System Informer
+1. Mở **Process Hacker** với quyền Admin.
+2. Tìm tiến trình `gta_sa.exe` trong danh sách.
+3. Nhấp chuột phải vào `gta_sa.exe` -> Chọn **Miscellaneous** -> **Inject DLL...**
+4. Chọn file `CheatMenuSA.dll`.
+5. Menu sẽ lập tức kích hoạt trong game!
+
