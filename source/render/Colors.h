@@ -63,6 +63,7 @@ namespace color
 	inline const CRGBA SuccessGreen    = CRGBA(0, 230, 118, 255);
 	inline const CRGBA WarningYellow   = CRGBA(255, 214, 0, 255);
 	inline const CRGBA DangerRed       = CRGBA(255, 23, 68, 255);
+	inline const CRGBA HealthRed       = CRGBA(255, 23, 68, 255);
 	inline const CRGBA InfoBlue        = CRGBA(64, 156, 255, 255);
 
 	inline const CRGBA SuccessBg       = CRGBA(0, 230, 118, 28);

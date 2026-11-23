@@ -342,10 +342,10 @@ void McpBridge::on_game_process()
 		m_snapshot.x = pos.x;
 		m_snapshot.y = pos.y;
 		m_snapshot.z = pos.z;
-		m_snapshot.heading = local->m_fCurrentRotation;
+		m_snapshot.heading = local->GetHeading();
 		m_snapshot.in_car = (local->m_pVehicle != nullptr);
 
-		auto pInfo = local->GetPlayerInfoForThisPlayerPed();
+		auto pInfo = &CWorld::Players[0];
 		if (pInfo && pInfo->m_PlayerData.m_pWanted)
 		{
 			m_snapshot.wanted = pInfo->m_PlayerData.m_pWanted->m_nWantedLevel;

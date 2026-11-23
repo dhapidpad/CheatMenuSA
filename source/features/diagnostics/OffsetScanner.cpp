@@ -67,6 +67,36 @@ uintptr_t OffsetScanner::FindPatternIDA(const char* moduleName, const char* idaP
 	return FindPattern(moduleName, patternBytes.c_str(), mask.c_str());
 }
 
+static bool SafeReadPtr(uintptr_t addr, uintptr_t* outVal)
+{
+	__try {
+		*outVal = *reinterpret_cast<uintptr_t*>(addr);
+		return true;
+	} __except(EXCEPTION_EXECUTE_HANDLER) {
+		return false;
+	}
+}
+
+static bool SafeReadFloat(uintptr_t addr, float* outVal)
+{
+	__try {
+		*outVal = *reinterpret_cast<float*>(addr);
+		return true;
+	} __except(EXCEPTION_EXECUTE_HANDLER) {
+		return false;
+	}
+}
+
+static bool SafeReadUint(uintptr_t addr, unsigned int* outVal)
+{
+	__try {
+		*outVal = *reinterpret_cast<unsigned int*>(addr);
+		return true;
+	} __except(EXCEPTION_EXECUTE_HANDLER) {
+		return false;
+	}
+}
+
 void OffsetScanner::RegisterOffset(const std::string& name, uintptr_t addr, const std::string& valStr, const std::string& desc, bool found)
 {
 	char hexBuf[32];
@@ -99,49 +129,60 @@ void OffsetScanner::ScanAllCoreOffsets()
 	}
 
 	// 2. Direct3D 9 Device
-	__try {
-		auto ppDevice = reinterpret_cast<IDirect3DDevice9**>(0xC97C20);
-		if (ppDevice && *ppDevice)
+	uintptr_t pDevice = 0;
+	if (SafeReadPtr(0xC97C20, &pDevice) && pDevice)
+	{
+		uintptr_t realDevice = 0;
+		if (SafeReadPtr(pDevice, &realDevice) && realDevice)
 		{
 			char val[64];
-			snprintf(val, sizeof(val), "Device* = 0x%08X", static_cast<unsigned int>(reinterpret_cast<uintptr_t>(*ppDevice)));
+			snprintf(val, sizeof(val), "Device* = 0x%08X", static_cast<unsigned int>(realDevice));
 			RegisterOffset("pDirect3DDevice9", 0xC97C20, val, "Pointer to IDirect3DDevice9");
 		}
 		else
 		{
 			RegisterOffset("pDirect3DDevice9", 0xC97C20, "Null", "Pointer to IDirect3DDevice9", false);
 		}
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+	else
+	{
 		RegisterOffset("pDirect3DDevice9", 0xC97C20, "Access Error", "Pointer to IDirect3DDevice9", false);
 	}
 
 	// 3. CPool<CPlayerPed>
-	__try {
-		auto pPool = *reinterpret_cast<uintptr_t*>(0xB6F5F0);
+	uintptr_t pPool = 0;
+	if (SafeReadPtr(0xB6F5F0, &pPool))
+	{
 		char val[64];
 		snprintf(val, sizeof(val), "Pool* = 0x%08X", static_cast<unsigned int>(pPool));
 		RegisterOffset("CPool<CPlayerPed>", 0xB6F5F0, val, "Player Ped Pool Pointer");
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+	else
+	{
 		RegisterOffset("CPool<CPlayerPed>", 0xB6F5F0, "Error", "Player Ped Pool Pointer", false);
 	}
 
 	// 4. CPool<CVehicle>
-	__try {
-		auto pPool = *reinterpret_cast<uintptr_t*>(0xBA18FC);
+	if (SafeReadPtr(0xBA18FC, &pPool))
+	{
 		char val[64];
 		snprintf(val, sizeof(val), "Pool* = 0x%08X", static_cast<unsigned int>(pPool));
 		RegisterOffset("CPool<CVehicle>", 0xBA18FC, val, "Vehicle Pool Pointer");
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+	else
+	{
 		RegisterOffset("CPool<CVehicle>", 0xBA18FC, "Error", "Vehicle Pool Pointer", false);
 	}
 
 	// 5. CPool<CPed>
-	__try {
-		auto pPool = *reinterpret_cast<uintptr_t*>(0xB74490);
+	if (SafeReadPtr(0xB74490, &pPool))
+	{
 		char val[64];
 		snprintf(val, sizeof(val), "Pool* = 0x%08X", static_cast<unsigned int>(pPool));
 		RegisterOffset("CPool<CPed>", 0xB74490, val, "Ped Pool Pointer");
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+	else
+	{
 		RegisterOffset("CPool<CPed>", 0xB74490, "Error", "Ped Pool Pointer", false);
 	}
 
@@ -150,41 +191,53 @@ void OffsetScanner::ScanAllCoreOffsets()
 	RegisterOffset("TheCamera.m_Matrix", 0xB6F290, "RwMatrix", "Active Camera World Matrix");
 
 	// 7. Graphics & Display Engine Offsets
-	__try {
-		float fov = *reinterpret_cast<float*>(0x8D5038);
+	float fov = 0.0f;
+	if (SafeReadFloat(0x8D5038, &fov))
+	{
 		char val[64];
 		snprintf(val, sizeof(val), "FOV = %.1f deg", fov);
 		RegisterOffset("CDraw::ms_fFOV", 0x8D5038, val, "Camera Field of View");
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+	else
+	{
 		RegisterOffset("CDraw::ms_fFOV", 0x8D5038, "Error", "Camera Field of View", false);
 	}
 
-	__try {
-		float farClip = *reinterpret_cast<float*>(0xB7C4F0);
+	float farClip = 0.0f;
+	if (SafeReadFloat(0xB7C4F0, &farClip))
+	{
 		char val[64];
 		snprintf(val, sizeof(val), "FarClip = %.1f m", farClip);
 		RegisterOffset("CDraw::ms_fFarClip", 0xB7C4F0, val, "Maximum Draw Distance");
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+	else
+	{
 		RegisterOffset("CDraw::ms_fFarClip", 0xB7C4F0, "Error", "Maximum Draw Distance", false);
 	}
 
-	__try {
-		float aspect = *reinterpret_cast<float*>(0xC3EFA4);
+	float aspect = 0.0f;
+	if (SafeReadFloat(0xC3EFA4, &aspect))
+	{
 		char val[64];
 		snprintf(val, sizeof(val), "Aspect = %.4f", aspect);
 		RegisterOffset("CDraw::ms_fAspectRatio", 0xC3EFA4, val, "Engine Aspect Ratio");
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+	else
+	{
 		RegisterOffset("CDraw::ms_fAspectRatio", 0xC3EFA4, "Error", "Engine Aspect Ratio", false);
 	}
 
 	// 8. Game Timer & Timescale
-	__try {
-		unsigned int timeMs = *reinterpret_cast<unsigned int*>(0xB7CB84);
-		float timeScale = *reinterpret_cast<float*>(0xB7CB64);
+	unsigned int timeMs = 0;
+	float timeScale = 0.0f;
+	if (SafeReadUint(0xB7CB84, &timeMs) && SafeReadFloat(0xB7CB64, &timeScale))
+	{
 		char val[64];
 		snprintf(val, sizeof(val), "Time = %u ms | Scale = %.2f", timeMs, timeScale);
 		RegisterOffset("CTimer::m_snTimeInMilliseconds", 0xB7CB84, val, "Engine Internal Tick Counter");
-	} __except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+	else
+	{
 		RegisterOffset("CTimer::m_snTimeInMilliseconds", 0xB7CB84, "Error", "Engine Internal Tick Counter", false);
 	}
 
@@ -200,15 +253,12 @@ void OffsetScanner::ScanAllCoreOffsets()
 		snprintf(val, sizeof(val), "Base = 0x%08X", static_cast<unsigned int>(sampBase));
 		RegisterOffset("samp.dll Base", sampBase, val, "SA-MP Client Module Handle");
 
-		// Known SAMP Info pointer offset (0x21A0F8 in 0.3.7-R1)
-		__try {
-			uintptr_t pSampInfo = *reinterpret_cast<uintptr_t*>(sampBase + 0x21A0F8);
-			if (pSampInfo)
-			{
-				snprintf(val, sizeof(val), "stSamp* = 0x%08X", static_cast<unsigned int>(pSampInfo));
-				RegisterOffset("SAMP stSamp", sampBase + 0x21A0F8, val, "SA-MP Main Context (0.3.7 R1)");
-			}
-		} __except(EXCEPTION_EXECUTE_HANDLER) {}
+		uintptr_t pSampInfo = 0;
+		if (SafeReadPtr(sampBase + 0x21A0F8, &pSampInfo) && pSampInfo)
+		{
+			snprintf(val, sizeof(val), "stSamp* = 0x%08X", static_cast<unsigned int>(pSampInfo));
+			RegisterOffset("SAMP stSamp", sampBase + 0x21A0F8, val, "SA-MP Main Context (0.3.7 R1)");
+		}
 	}
 	else
 	{
