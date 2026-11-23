@@ -36,6 +36,16 @@
 #define DEFAULT_SCREEN_WIDTH 640
 #define DEFAULT_SCREEN_HEIGHT 448
 
+// plugin-sdk compatibility
+#ifndef WEAPON_MINIGUN
+#define WEAPON_MINIGUN WEAPONTYPE_MINIGUN
+#endif
+#ifndef WEAPON_PARACHUTE
+#define WEAPON_PARACHUTE WEAPONTYPE_PARACHUTE
+#endif
+#define m_nActiveWeaponSlot m_nSelectedWepSlot
+#define Normalise Normalize
+
 template<typename T>
 inline void SafeReset(T object)
 {

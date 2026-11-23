@@ -199,10 +199,6 @@ void Esp::process_collectible(CPickup* pickup)
 	g_Renderer->text(pos_s.x, pos_s.y, DT_LEFT, color::Pink, ids.at(model_index).c_str());
 }
 
-inline CVector operator+(const CVector& vecOne, float multiplier) {
-	return CVector(vecOne.x + multiplier, vecOne.y + multiplier, vecOne.z);
-}
-
 void Esp::on_draw()
 {
 	auto local = FindPlayerPed();
@@ -231,9 +227,9 @@ void Esp::on_draw()
 				ped->m_matrix->pos = local->GetPosition() + (local->GetForward() * 1.1f);
 				ped->m_vecMoveSpeed.Set(0.0f, 0.0f, 0.0f);
 
-				ped->m_nPedFlags.bIsStanding = true;
-				ped->m_nPedFlags.bWasStanding = true;
-				ped->m_nPedFlags.bStayInSamePlace = true;
+				ped->bIsStanding = true;
+				ped->bWasStanding = true;
+				ped->bStayInSamePlace = true;
 			}
 		}
 	}
@@ -354,9 +350,9 @@ void PlayerCheats::airbrake(CPlayerPed* ped, double time_diff)
 			info->m_vecMoveSpeed.Set(0.0f, 0.0f, 0.0f);
 
 			// new pedFlags
-			ped->m_nPedFlags.bIsStanding = true;
-			ped->m_nPedFlags.bWasStanding = true;
-			ped->m_nPedFlags.bStayInSamePlace = true;
+			ped->bIsStanding = true;
+			ped->bWasStanding = true;
+			ped->bStayInSamePlace = true;
 
 			if (veh)
 			{
@@ -495,9 +491,9 @@ void PlayerCheats::on_game_process()
 			local->m_fHealth = max_health1 > max_health2 ? max_health1 : max_health2; // so bad
 
 			if (!g_isSamp)
-				local->m_nPhysicalFlags.bInvulnerable = true;
+				local->bInvulnerable = true;
 
-			local->m_nPedFlags.CantBeKnockedOffBike = 1;
+			local->CantBeKnockedOffBike = 1;
 		}
 
 		auto local_data = &local_info->m_PlayerData;
@@ -541,7 +537,7 @@ void PlayerCheats::on_game_process()
 			if (auto intelligence = local->m_pIntelligence)
 				intelligence->ClearTasks(true, true);
 
-			(int&)(local->m_nPhysicalFlags) &= 0xFFFFDFFF; // GTAfunc_LockActor(0);
+			*(uint32_t*)((char*)local + offsetof(CPhysical, m_nLastCollisionTime) + sizeof(unsigned int)) &= 0xFFFFDFFF; // GTAfunc_LockActor(0);
 			local_info->MakePlayerSafe(false, 10.0f); // GTAfunc_TogglePlayerControllable(0);
 			//TheCamera.RestoreWithJumpCut();
 		}
@@ -560,7 +556,7 @@ void PlayerCheats::on_game_process()
 	// just funny thingy. only you can see it in samp
 	if (g_Config->sp_LegSlide)
 	{
-		local->m_nPedFlags.bResetWalkAnims = true;
+		local->bResetWalkAnims = true;
 	}
 
 	// ghetto but it does its job
