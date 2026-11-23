@@ -33,6 +33,14 @@ jobs:
           }
           $nativePath = $nativePkg.FullName
           Write-Host "DirectX SDK Native Path: $nativePath"
+          New-Item -ItemType Directory -Force -Path "$nativePath\lib\x86"
+          if (Test-Path "$nativePath\release\lib\x86") {
+              Copy-Item "$nativePath\release\lib\x86\*" "$nativePath\lib\x86\" -Force
+          }
+          if (Test-Path "$nativePath\debug\lib\x86") {
+              Copy-Item "$nativePath\debug\lib\x86\*" "$nativePath\lib\x86\" -Force
+          }
+          Get-ChildItem -Path "$nativePath\lib\x86"
           "DXSDK_DIR=$nativePath" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Clone Plugin-SDK
