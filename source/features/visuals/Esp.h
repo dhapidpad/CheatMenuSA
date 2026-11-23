@@ -13,5 +13,7 @@ public:
 
 private:
 	void process_ped(CPed* local, CPed* ped, CPed* aimTarget);
+	void draw_skeleton(CPed* ped, const CRGBA& color);
+	void process_vehicles(CPed* local);
 	void draw_crosshair();
 };

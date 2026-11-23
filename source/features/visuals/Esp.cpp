@@ -20,7 +20,43 @@ void Esp::on_draw()
 		process_ped(local, ped, aimTarget);
 	}
 
+	if (g_Config->visuals.esp_Vehicles)
+	{
+		process_vehicles(local);
+	}
+
 	draw_crosshair();
+}
+
+void Esp::draw_skeleton(CPed* ped, const CRGBA& color)
+{
+	static const std::pair<std::size_t, std::size_t> boneConnections[] = {
+		{ BONE_HEAD2,         BONE_NECK },
+		{ BONE_NECK,          BONE_SPINE1 },
+		{ BONE_SPINE1,        BONE_PELVIS },
+		{ BONE_NECK,          BONE_LEFTSHOULDER },
+		{ BONE_LEFTSHOULDER,  BONE_LEFTELBOW },
+		{ BONE_LEFTELBOW,     BONE_LEFTHAND },
+		{ BONE_NECK,          BONE_RIGHTSHOULDER },
+		{ BONE_RIGHTSHOULDER, BONE_RIGHTELBOW },
+		{ BONE_RIGHTELBOW,    BONE_RIGHTHAND },
+		{ BONE_PELVIS,        BONE_LEFTKNEE },
+		{ BONE_LEFTKNEE,      BONE_LEFTFOOT },
+		{ BONE_PELVIS,        BONE_RIGHTKNEE },
+		{ BONE_RIGHTKNEE,     BONE_RIGHTFOOT }
+	};
+
+	for (const auto& conn : boneConnections)
+	{
+		CVector b1 = utils::get_bone_position(ped, conn.first);
+		CVector b2 = utils::get_bone_position(ped, conn.second);
+
+		CVector2D s1, s2;
+		if (utils::world_to_screen(b1, s1) && utils::world_to_screen(b2, s2))
+		{
+			g_Renderer->line(s1.x, s1.y, s2.x, s2.y, color, 1.0f);
+		}
+	}
 }
 
 void Esp::process_ped(CPed* local, CPed* ped, CPed* aimTarget)
@@ -62,6 +98,12 @@ void Esp::process_ped(CPed* local, CPed* ped, CPed* aimTarget)
 
 	bool isTarget = (ped == aimTarget);
 	CRGBA boxColor = isTarget ? color::DangerRed : color::TextWhite;
+
+	// Skeleton ESP
+	if (g_Config->visuals.esp_Skeleton)
+	{
+		draw_skeleton(ped, isTarget ? color::DangerRed : color::AccentCyan);
+	}
 
 	// Bounding Box
 	if (g_Config->visuals.esp_BoxType == 1) // Full 2D Box
@@ -114,6 +156,41 @@ void Esp::process_ped(CPed* local, CPed* ped, CPed* aimTarget)
 	{
 		float dist = (ped->GetPosition() - local->GetPosition()).Magnitude();
 		g_Renderer->text_small(x + (w / 2.0f), curBottomY, DT_CENTER, color::TextWhite, "%.0fm", dist);
+		curBottomY += 12.0f;
+	}
+
+	// Weapon Held
+	if (g_Config->visuals.esp_Weapon)
+	{
+		auto weapon = &ped->m_aWeapons[ped->m_nActiveWeaponSlot];
+		if (weapon && weapon->m_eWeaponType != WEAPONTYPE_UNARMED)
+		{
+			const char* wepName = utils::get_weapon_name(weapon->m_eWeaponType);
+			g_Renderer->text_small(x + (w / 2.0f), curBottomY, DT_CENTER, color::WarningYellow, wepName);
+		}
+	}
+}
+
+void Esp::process_vehicles(CPed* local)
+{
+	auto localVeh = FindPlayerVehicle(-1, false);
+
+	for (auto veh : CPools::ms_pVehiclePool)
+	{
+		if (!veh || veh == localVeh)
+			continue;
+
+		CVector vehPos = veh->GetPosition();
+		float dist = (vehPos - local->GetPosition()).Magnitude();
+		if (dist > 180.0f)
+			continue;
+
+		CVector2D screenPos;
+		if (utils::world_to_screen(vehPos, screenPos))
+		{
+			int health = static_cast<int>(veh->m_fHealth);
+			g_Renderer->text_small(screenPos.x, screenPos.y, DT_CENTER, color::AccentCyan, "[VEH %d] %d HP (%.0fm)", veh->m_nModelIndex, health, dist);
+		}
 	}
 }
 

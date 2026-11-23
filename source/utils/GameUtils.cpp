@@ -156,6 +156,30 @@ std::uint64_t utils::time_get()
 	return static_cast<std::uint64_t>(time_now.QuadPart - init_time.QuadPart);
 }
 
+bool utils::teleport_to_pos(const CVector& pos)
+{
+	auto player = FindPlayerPed();
+	if (!player) return false;
+
+	CVector target = pos;
+	float groundZ = CWorld::FindGroundZForCoord(target.x, target.y);
+	if (groundZ > -100.0f)
+		target.z = groundZ + 1.2f;
+
+	auto veh = FindPlayerVehicle(-1, false);
+	if (veh)
+	{
+		veh->m_matrix->pos = target;
+		veh->m_vecMoveSpeed.Set(0.0f, 0.0f, 0.0f);
+	}
+	else
+	{
+		player->m_matrix->pos = target;
+		player->m_vecMoveSpeed.Set(0.0f, 0.0f, 0.0f);
+	}
+	return true;
+}
+
 bool utils::teleport_to_marker()
 {
 	auto player = FindPlayerPed();
@@ -188,6 +212,35 @@ bool utils::teleport_to_marker()
 			return true;
 		}
 	}
+	return false;
+}
+
+bool utils::spawn_vehicle(int modelId)
+{
+	auto local = FindPlayerPed();
+	if (!local) return false;
+
+	CStreaming::RequestModel(modelId, 2);
+	CStreaming::LoadAllRequestedModels(false);
+
+	if (CStreaming::HasModelLoaded(modelId))
+	{
+		CVector spawnPos = local->GetPosition() + (local->GetForward() * 4.5f);
+		spawnPos.z += 0.6f;
+
+		CVehicle* veh = CCarCtrl::CreateCarForScript(modelId, spawnPos, TRUE);
+		if (veh)
+		{
+			veh->SetHeading(local->GetHeading());
+			veh->m_vecMoveSpeed.Set(0.0f, 0.0f, 0.0f);
+			veh->m_vecTurnSpeed.Set(0.0f, 0.0f, 0.0f);
+			veh->m_eDoorLock = DOORLOCK_UNLOCKED;
+		}
+
+		CStreaming::SetModelIsDeletable(modelId);
+		return (veh != nullptr);
+	}
+
 	return false;
 }
 
@@ -305,5 +358,55 @@ void utils::unlock_nearby_cars()
 	{
 		if (!vehicle) continue;
 		vehicle->m_eDoorLock = DOORLOCK_UNLOCKED;
+	}
+}
+
+void utils::set_game_time(int hour, int minute)
+{
+	CClock::ms_nGameClockHours = static_cast<unsigned char>(hour);
+	CClock::ms_nGameClockMinutes = static_cast<unsigned char>(minute);
+}
+
+void utils::set_game_weather(int weatherId)
+{
+	CWeather::ForceWeatherNow(static_cast<short>(weatherId));
+}
+
+const char* utils::get_weapon_name(eWeaponType type)
+{
+	switch (type)
+	{
+	case WEAPONTYPE_UNARMED:            return "Unarmed";
+	case WEAPONTYPE_BRASSKNUCKLE:       return "Brass Knuckles";
+	case WEAPONTYPE_GOLFCLUB:           return "Golf Club";
+	case WEAPONTYPE_NIGHTSTICK:         return "Nightstick";
+	case WEAPONTYPE_KNIFE:              return "Knife";
+	case WEAPONTYPE_BASEBALLBAT:        return "Baseball Bat";
+	case WEAPONTYPE_SHOVEL:             return "Shovel";
+	case WEAPONTYPE_POOLCUE:            return "Pool Cue";
+	case WEAPONTYPE_KATANA:             return "Katana";
+	case WEAPONTYPE_CHAINSAW:           return "Chainsaw";
+	case WEAPONTYPE_PISTOL:             return "Pistol";
+	case WEAPONTYPE_PISTOL_SILENCED:    return "Silenced 9mm";
+	case WEAPONTYPE_DESERT_EAGLE:       return "Desert Eagle";
+	case WEAPONTYPE_SHOTGUN:            return "Shotgun";
+	case WEAPONTYPE_SAWNOFF_SHOTGUN:    return "Sawn-Off Shotgun";
+	case WEAPONTYPE_SPAS12_SHOTGUN:     return "Combat Shotgun";
+	case WEAPONTYPE_MICRO_UZI:          return "Micro Uzi";
+	case WEAPONTYPE_MP5:                return "MP5";
+	case WEAPONTYPE_AK47:               return "AK-47";
+	case WEAPONTYPE_M4:                 return "M4";
+	case WEAPONTYPE_TEC9:               return "Tec-9";
+	case WEAPONTYPE_COUNTRYRIFLE:       return "Rifle";
+	case WEAPONTYPE_SNIPERRIFLE:        return "Sniper Rifle";
+	case WEAPONTYPE_ROCKETLAUNCHER:     return "RPG";
+	case WEAPONTYPE_HEATSEEKING_ROCKETLAUNCHER: return "Heatseeking RPG";
+	case WEAPONTYPE_FLAMETHROWER:       return "Flamethrower";
+	case WEAPONTYPE_MINIGUN:            return "Minigun";
+	case WEAPONTYPE_GRENADE:            return "Grenade";
+	case WEAPONTYPE_TEARGAS:            return "Teargas";
+	case WEAPONTYPE_MOLOTOV:            return "Molotov";
+	case WEAPONTYPE_SATCHEL_CHARGE:     return "Satchel Charge";
+	default:                            return "Weapon";
 	}
 }

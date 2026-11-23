@@ -38,6 +38,7 @@ void FeatureManager::on_draw_hud()
 void FeatureManager::on_game_process()
 {
 	m_playerCheats->on_game_process();
+	m_aimbot->on_game_process();
 
 	auto local = FindPlayerPed();
 	if (local)

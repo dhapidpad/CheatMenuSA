@@ -15,6 +15,39 @@ void Aimbot::on_draw()
 	g_Renderer->circle(crosshair_pos.x, crosshair_pos.y, g_Config->combat.aim_SmartFov, color::AccentCyan, 48);
 }
 
+void Aimbot::on_game_process()
+{
+	auto local = FindPlayerPed();
+	if (!local) return;
+
+	auto local_info = local->GetPlayerInfoForThisPlayerPed();
+	if (local_info && g_Config->combat.rapid_fire)
+	{
+		local_info->m_PlayerData.m_fAttackButtonCounter = 0.0f;
+		local_info->m_bFastReload = true;
+	}
+
+	// Triggerbot
+	if (g_Config->combat.triggerbot)
+	{
+		CPed* target = utils::find_ped_to_attack();
+		if (target)
+		{
+			CVector2D crosshair_pos(SCREEN_WIDTH * CCamera::m_f3rdPersonCHairMultX, SCREEN_HEIGHT * CCamera::m_f3rdPersonCHairMultY);
+			CVector head = utils::get_bone_position(target, BONE_HEAD2);
+			CVector2D head_s;
+			if (utils::world_to_screen(head, head_s))
+			{
+				if ((crosshair_pos - head_s).Magnitude() < 24.0f)
+				{
+					if (local_info)
+						local_info->m_PlayerData.m_fAttackButtonCounter = 0.0f;
+				}
+			}
+		}
+	}
+}
+
 CVector Aimbot::calculate_aim_vector(CPed* firingPed, const CVector& start)
 {
 	auto target = utils::find_ped_to_attack();

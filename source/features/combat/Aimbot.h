@@ -10,5 +10,6 @@ public:
 	~Aimbot() = default;
 
 	void on_draw();
+	void on_game_process();
 	CVector calculate_aim_vector(CPed* firingPed, const CVector& start);
 };

@@ -41,6 +41,18 @@ void PlayerCheats::on_game_process()
 			local->CantBeKnockedOffBike = 1;
 		}
 
+		// Infinite Stamina & Oxygen
+		if (g_Config->movement.infinite_stamina)
+		{
+			local_info->m_fSprintStamina = 1000.0f;
+			local_info->m_fSprintEnergy = 1000.0f;
+		}
+
+		if (g_Config->movement.infinite_oxygen)
+		{
+			local_info->m_fUnderwaterStamina = 1000.0f;
+		}
+
 		auto local_data = &local_info->m_PlayerData;
 		if (local_data)
 		{
@@ -83,21 +95,10 @@ void PlayerCheats::on_game_process()
 		}
 	}
 
-	// Car Godmode
-	if (g_Config->player.sp_InvCar)
+	// Mega Jump
+	if (g_Config->movement.mega_jump && local->m_vecMoveSpeed.z > 0.04f && utils::key_down(RsKeyCodes::rsSPACE))
 	{
-		auto vehicle = FindPlayerVehicle(-1, false);
-		if (vehicle)
-		{
-			vehicle->Fix();
-			vehicle->m_fHealth = 1000.0f;
-		}
-	}
-
-	// Leg Slide
-	if (g_Config->player.sp_LegSlide)
-	{
-		local->bResetWalkAnims = true;
+		local->m_vecMoveSpeed.z += 0.06f;
 	}
 
 	// Speedhack
@@ -108,6 +109,62 @@ void PlayerCheats::on_game_process()
 		{
 			local->ApplyMoveSpeed();
 		}
+	}
+
+	// Vehicle Cheats
+	auto vehicle = FindPlayerVehicle(-1, false);
+	if (vehicle)
+	{
+		// Vehicle Godmode
+		if (g_Config->player.sp_InvCar)
+		{
+			vehicle->Fix();
+			vehicle->m_fHealth = 1000.0f;
+		}
+
+		// Auto-Flip Vehicle
+		if (g_Config->player.auto_flip_car && vehicle->m_matrix && vehicle->m_matrix->up.z < -0.3f)
+		{
+			utils::flip_vehicle();
+		}
+
+		// Super Heavy Car
+		if (g_Config->movement.car_heavy)
+		{
+			vehicle->bIsHeavy = true;
+		}
+
+		// Drive on Water
+		if (g_Config->movement.car_drive_on_water && vehicle->m_matrix)
+		{
+			if (vehicle->m_matrix->pos.z < 0.5f)
+			{
+				vehicle->m_matrix->pos.z = 1.0f;
+				vehicle->m_vecMoveSpeed.z = 0.0f;
+			}
+		}
+
+		// Nitro Rocket Boost (Left Alt or Left Shift)
+		if (g_Config->movement.car_nitro)
+		{
+			if ((GetAsyncKeyState(VK_LMENU) & 0x8000) || (GetAsyncKeyState(VK_LSHIFT) & 0x8000))
+			{
+				vehicle->m_vecMoveSpeed += vehicle->GetForward() * 0.06f;
+			}
+		}
+
+		// Instant Emergency Stop ('X' Key)
+		if (g_Config->movement.car_instant_stop && (GetAsyncKeyState('X') & 0x8000))
+		{
+			vehicle->m_vecMoveSpeed.Set(0.0f, 0.0f, 0.0f);
+			vehicle->m_vecTurnSpeed.Set(0.0f, 0.0f, 0.0f);
+		}
+	}
+
+	// Leg Slide
+	if (g_Config->player.sp_LegSlide)
+	{
+		local->bResetWalkAnims = true;
 	}
 
 	// No Reload
