@@ -1,6 +1,11 @@
 #include "Menu.h"
 #include "GameUtils.h"
 #include "MathUtils.h"
+#include "features/diagnostics/Logger.h"
+#include "features/diagnostics/OffsetScanner.h"
+#include "features/FeatureManager.h"
+#include "features/display/DisplayTweaks.h"
+#include "bridge/McpBridge.h"
 
 Menu::Menu()
 	: m_isDragging(false),
@@ -115,13 +120,16 @@ void Menu::render_sidebar(float x, float y, float w, float h)
 		"[*] VISUALS",
 		"[>] MOVEMENT",
 		"[#] PLAYER & CAR",
-		"[$] ACTIONS & SPAWN"
+		"[$] ACTIONS & SPAWN",
+		"[~] DISPLAY & GFX",
+		"[?] DO OFFSET",
+		"[!] LOGS & MCP"
 	};
 
-	const float tabH = 38.0f;
-	for (int i = 0; i < 5; ++i)
+	const float tabH = 32.0f;
+	for (int i = 0; i < 8; ++i)
 	{
-		float tabY = y + 10.0f + (i * (tabH + 4.0f));
+		float tabY = y + 8.0f + (i * (tabH + 2.0f));
 		bool isCurrent = (g_Config->ui.active_tab == i);
 		bool hovered = g_Input->is_hovered(x + 6.0f, tabY, w - 12.0f, tabH);
 
@@ -136,18 +144,18 @@ void Menu::render_sidebar(float x, float y, float w, float h)
 			// Active tab highlight
 			g_Renderer->bordered_rect(x + 6.0f, tabY, w - 12.0f, tabH, color::CardBg, color::CardBorder, 1.0f);
 			g_Renderer->filled_rect(x + 6.0f, tabY, 3.0f, tabH, color::AccentCyan);
-			g_Renderer->text(x + 14.0f, tabY + 11.0f, DT_LEFT, color::AccentCyan, tabNames[i]);
+			g_Renderer->text(x + 14.0f, tabY + 8.0f, DT_LEFT, color::AccentCyan, tabNames[i]);
 		}
 		else
 		{
 			if (hovered)
 			{
 				g_Renderer->filled_rect(x + 6.0f, tabY, w - 12.0f, tabH, color::CardBg);
-				g_Renderer->text(x + 14.0f, tabY + 11.0f, DT_LEFT, color::TextWhite, tabNames[i]);
+				g_Renderer->text(x + 14.0f, tabY + 8.0f, DT_LEFT, color::TextWhite, tabNames[i]);
 			}
 			else
 			{
-				g_Renderer->text(x + 14.0f, tabY + 11.0f, DT_LEFT, color::TextMuted, tabNames[i]);
+				g_Renderer->text(x + 14.0f, tabY + 8.0f, DT_LEFT, color::TextMuted, tabNames[i]);
 			}
 		}
 	}
@@ -167,6 +175,9 @@ void Menu::render_content(float x, float y, float w, float h)
 	case 2: tab_movement(x, y, w, h); break;
 	case 3: tab_player(x, y, w, h); break;
 	case 4: tab_actions(x, y, w, h); break;
+	case 5: tab_display(x, y, w, h); break;
+	case 6: tab_offsets(x, y, w, h); break;
+	case 7: tab_logs(x, y, w, h); break;
 	default: break;
 	}
 }
@@ -610,4 +621,167 @@ void Menu::tab_actions(float x, float y, float w, float h)
 		g_isPanic = true;
 		g_Config->ui.menu_open = false;
 	}
+}
+
+void Menu::tab_display(float x, float y, float w, float h)
+{
+	float col_w = (w - 36.0f) * 0.5f;
+	float col1_x = x + 12.0f;
+	float col2_x = col1_x + col_w + 12.0f;
+
+	// Column 1: Display & Window Mode
+	section_header(col1_x, y + 14.0f, col_w, "DISPLAY & WINDOW MODE");
+
+	checkbox(col1_x, y + 42.0f, "Borderless Fullscreen (Khong vien)", g_Config->display.borderless_fullscreen, "Chuyen game sang che do khong vien toan man hinh (ho tro Alt+Tab muot ma khong crash).");
+
+	std::vector<std::string> aspectModes = { "Auto / Mac dinh", "16:9 Widescreen", "21:9 Ultrawide", "4:3 Classic" };
+	combobox(col1_x, y + 74.0f, col_w, "Ti le man hinh (Aspect Ratio)", g_Config->display.aspect_ratio_mode, aspectModes, "Sua loi meo hinh, keo dai nhan vat tren man hinh rong.");
+
+	checkbox(col1_x, y + 124.0f, "Tat gioi han FPS (Unlock FPS)", g_Config->display.fps_limiter_disabled, "Tat frame limiter mac dinh cua game de trai nghiem 60+ FPS.");
+
+	std::vector<std::string> fpsModes = { "30 FPS (Chuan)", "60 FPS (Muot ma)", "90 FPS", "120 FPS", "Uncapped (Cuc dai)" };
+	static int fpsIdx = 1;
+	if (combobox(col1_x, y + 156.0f, col_w, "Muc tieu FPS (Target FPS)", fpsIdx, fpsModes, "Cai dat so khung hinh muc tieu."))
+	{
+		if (fpsIdx == 0) g_Config->display.target_fps = 30;
+		else if (fpsIdx == 1) g_Config->display.target_fps = 60;
+		else if (fpsIdx == 2) g_Config->display.target_fps = 90;
+		else if (fpsIdx == 3) g_Config->display.target_fps = 120;
+		else g_Config->display.target_fps = 0;
+	}
+
+	// Column 2: Camera FOV & Render Distance
+	section_header(col2_x, y + 14.0f, col_w, "CAMERA & GRAPHICS ENGINE");
+
+	checkbox(col2_x, y + 42.0f, "Tuy chinh goc nhin (Custom FOV)", g_Config->display.custom_fov_enabled, "Bat goc nhin rong hien dai.");
+	slider_float(col2_x, y + 74.0f, col_w, "Goc nhin FOV (Camera Angle)", g_Config->display.custom_fov, 50.0f, 120.0f, "%.1f deg", "Chinh do rong tam nhin camera (mac dinh ~70 deg).");
+
+	checkbox(col2_x, y + 124.0f, "Tang tam nhin xa (Draw Distance)", g_Config->display.draw_distance_enabled, "Mo rong khoang cach hien thi map, bo suong mu gioi han.");
+	slider_float(col2_x, y + 156.0f, col_w, "He so tam nhin (Distance Multiplier)", g_Config->display.draw_distance_mult, 1.0f, 4.0f, "%.1fx", "Nhan boi khoang cach load canh vat (Far Clip).");
+
+	if (button(col2_x, y + 210.0f, col_w, 28.0f, "Ap dung thiet lap do hoa", color::AccentCyan, "Kich hoat cac thay doi do hoa ngay lap tuc."))
+	{
+		set_status("Thiet lap do hoa & man hinh da duoc cap nhat!");
+	}
+}
+
+void Menu::tab_offsets(float x, float y, float w, float h)
+{
+	float topY = y + 12.0f;
+	float btnW = 180.0f;
+
+	if (button(x + 12.0f, topY, btnW, 26.0f, "QUET MEMORY OFFSET", color::AccentCyan, "Quet toan bo cac con tro, Pool va dia chi cau truc GTA SA."))
+	{
+		OffsetScanner::ScanAllCoreOffsets();
+		set_status("Da hoan tat quet Memory Offset!");
+	}
+
+	if (button(x + 200.0f, topY, btnW, 26.0f, "XUAT RA FILE TXT", color::AccentBlue, "Xuat danh sach offset ra file offsets_dump.txt"))
+	{
+		OffsetScanner::ExportToFile("offsets_dump.txt");
+		set_status("Da xuat danh sach ra file offsets_dump.txt");
+	}
+
+	// Header Table
+	float tableY = topY + 36.0f;
+	float tableW = w - 24.0f;
+	float tableH = h - 60.0f;
+
+	g_Renderer->filled_rect(x + 12.0f, tableY, tableW, 22.0f, color::BgHeader);
+	g_Renderer->bordered_rect(x + 12.0f, tableY, tableW, tableH, color::CardBg, color::CardBorder, 1.0f);
+
+	g_Renderer->text_small(x + 18.0f, tableY + 5.0f, DT_LEFT, color::AccentCyan, "CAU TRUC / OFFSET");
+	g_Renderer->text_small(x + 190.0f, tableY + 5.0f, DT_LEFT, color::AccentCyan, "DIA CHI (HEX)");
+	g_Renderer->text_small(x + 280.0f, tableY + 5.0f, DT_LEFT, color::AccentCyan, "GIA TRI HIEN TAI");
+	g_Renderer->text_small(x + 400.0f, tableY + 5.0f, DT_LEFT, color::AccentCyan, "MO TA");
+
+	// Items
+	const auto& results = OffsetScanner::GetResults();
+	if (results.empty())
+	{
+		g_Renderer->text(x + 150.0f, tableY + 60.0f, DT_LEFT, color::TextMuted, "Chua thuc hien quet. Hay bam 'QUET MEMORY OFFSET' o tren!");
+	}
+	else
+	{
+		size_t maxItems = std::min(results.size(), size_t(11));
+		for (size_t i = 0; i < maxItems; ++i)
+		{
+			float rowY = tableY + 24.0f + (i * 22.0f);
+			if (i % 2 == 1)
+			{
+				g_Renderer->filled_rect(x + 13.0f, rowY, tableW - 2.0f, 21.0f, color::BgSidebar);
+			}
+
+			const auto& o = results[i];
+			g_Renderer->text_small(x + 18.0f, rowY + 4.0f, DT_LEFT, o.found ? color::TextWhite : color::TextMuted, o.name.c_str());
+			g_Renderer->text_small(x + 190.0f, rowY + 4.0f, DT_LEFT, color::AccentCyan, o.addressHex.c_str());
+			g_Renderer->text_small(x + 280.0f, rowY + 4.0f, DT_LEFT, color::WarningYellow, o.valueStr.c_str());
+			g_Renderer->text_small(x + 400.0f, rowY + 4.0f, DT_LEFT, color::TextMuted, o.description.c_str());
+		}
+	}
+}
+
+void Menu::tab_logs(float x, float y, float w, float h)
+{
+	float topY = y + 10.0f;
+
+	// MCP Bridge Status Badge
+	bool mcpActive = (g_Features && g_Features->mcp_bridge() && g_Features->mcp_bridge()->is_running());
+	int clients = mcpActive ? g_Features->mcp_bridge()->client_count() : 0;
+	int port = mcpActive ? g_Features->mcp_bridge()->port() : 13337;
+
+	if (mcpActive)
+	{
+		g_Renderer->bordered_rect(x + 12.0f, topY, 230.0f, 26.0f, color::CardBg, color::SuccessGreen, 1.0f);
+		g_Renderer->text_small(x + 18.0f, topY + 7.0f, DT_LEFT, color::SuccessGreen, "MCP SERVER: 127.0.0.1:%d (%d Client)", port, clients);
+	}
+	else
+	{
+		g_Renderer->bordered_rect(x + 12.0f, topY, 150.0f, 26.0f, color::CardBg, color::HealthRed, 1.0f);
+		g_Renderer->text_small(x + 18.0f, topY + 7.0f, DT_LEFT, color::HealthRed, "MCP SERVER: OFFLINE");
+	}
+
+	if (button(x + 250.0f, topY, 110.0f, 26.0f, "XOA LOG", color::WarningYellow, "Xoa toan bo nhat ky."))
+	{
+		Logger::Clear();
+		set_status("Da xoa log!");
+	}
+
+	if (button(x + 368.0f, topY, 130.0f, 26.0f, "LUU FILE LOG", color::AccentCyan, "Ghi nhat ky ra file CheatMenu.log"))
+	{
+		Logger::ExportToFile("CheatMenu.log");
+		set_status("Da luu log ra CheatMenu.log");
+	}
+
+	// Console Window
+	float boxY = topY + 34.0f;
+	float boxW = w - 24.0f;
+	float boxH = h - 68.0f;
+
+	g_Renderer->bordered_rect(x + 12.0f, boxY, boxW, boxH, CRGBA(8, 10, 15, 240), color::CardBorder, 1.0f);
+
+	auto entries = Logger::GetEntries();
+	if (entries.empty())
+	{
+		g_Renderer->text_small(x + 24.0f, boxY + 20.0f, DT_LEFT, color::TextMuted, "Chua co log nao duoc ghi.");
+	}
+	else
+	{
+		// Render the most recent lines that fit
+		size_t maxLines = 13;
+		size_t startIdx = (entries.size() > maxLines) ? (entries.size() - maxLines) : 0;
+
+		for (size_t i = startIdx; i < entries.size(); ++i)
+		{
+			float lineY = boxY + 10.0f + ((i - startIdx) * 18.0f);
+			const auto& e = entries[i];
+
+			g_Renderer->text_small(x + 18.0f, lineY, DT_LEFT, color::TextMuted, "[%s]", e.time.c_str());
+			g_Renderer->text_small(x + 72.0f, lineY, DT_LEFT, Logger::LevelToColor(e.level), "[%s]", Logger::LevelToString(e.level));
+			g_Renderer->text_small(x + 130.0f, lineY, DT_LEFT, color::TextWhite, "%s", e.message.c_str());
+		}
+	}
+
+	// Bottom info
+	g_Renderer->text_small(x + 14.0f, y + h - 18.0f, DT_LEFT, color::TextMuted, "MCP Protocol: TCP JSON gui toi 127.0.0.1:13337 | Ho tro: ping, teleport, spawn_vehicle, scan_offsets, set_cheat");
 }

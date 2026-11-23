@@ -37,6 +37,9 @@ private:
 	void tab_movement(float x, float y, float w, float h);
 	void tab_player(float x, float y, float w, float h);
 	void tab_actions(float x, float y, float w, float h);
+	void tab_display(float x, float y, float w, float h);
+	void tab_offsets(float x, float y, float w, float h);
+	void tab_logs(float x, float y, float w, float h);
 
 	// Controls
 	void section_header(float x, float y, float w, const char* title);

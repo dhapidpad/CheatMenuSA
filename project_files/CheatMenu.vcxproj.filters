@@ -25,6 +25,15 @@
     <Filter Include="features\player">
       <UniqueIdentifier>{254b8ea1-47a8-44c9-b8fe-07f8c2ffdfa8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="features\display">
+      <UniqueIdentifier>{6f7c8b21-4d33-4f55-9122-bc781190beef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\diagnostics">
+      <UniqueIdentifier>{7a8b9c01-3e44-4f66-8233-cd892201beef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bridge">
+      <UniqueIdentifier>{8b9c0d12-2f55-4077-9344-de903312beef}</UniqueIdentifier>
+    </Filter>
     <Filter Include="hooks">
       <UniqueIdentifier>{0f0d9eec-fd62-4a5b-97f2-ae76a3df051d}</UniqueIdentifier>
     </Filter>
@@ -65,6 +74,18 @@
     </ClCompile>
     <ClCompile Include="..\source\features\player\PlayerCheats.cpp">
       <Filter>features\player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\display\DisplayTweaks.cpp">
+      <Filter>features\display</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\diagnostics\Logger.cpp">
+      <Filter>features\diagnostics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\diagnostics\OffsetScanner.cpp">
+      <Filter>features\diagnostics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\bridge\McpBridge.cpp">
+      <Filter>bridge</Filter>
     </ClCompile>
     <ClCompile Include="..\source\features\FeatureManager.cpp">
       <Filter>features</Filter>
@@ -115,6 +136,18 @@
     </ClInclude>
     <ClInclude Include="..\source\features\player\PlayerCheats.h">
       <Filter>features\player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\display\DisplayTweaks.h">
+      <Filter>features\display</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\diagnostics\Logger.h">
+      <Filter>features\diagnostics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\diagnostics\OffsetScanner.h">
+      <Filter>features\diagnostics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\bridge\McpBridge.h">
+      <Filter>bridge</Filter>
     </ClInclude>
     <ClInclude Include="..\source\features\FeatureManager.h">
       <Filter>features</Filter>

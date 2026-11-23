@@ -59,7 +59,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;_USE_MATH_DEFINES;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;NDEBUG;GTASA;PLUGIN_SGV_10US;RW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\render;..\source\ui;..\source\features;..\source\hooks;..\source\utils;$(PLUGIN_SDK_DIR)\shared;$(PLUGIN_SDK_DIR)\shared\game;$(PLUGIN_SDK_DIR)\plugin_SA;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA\enums;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA\rw;$(PLUGIN_SDK_DIR)\safetyhook;$(DXSDK_DIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\render;..\source\ui;..\source\features;..\source\hooks;..\source\utils;..\source\bridge;$(PLUGIN_SDK_DIR)\shared;$(PLUGIN_SDK_DIR)\shared\game;$(PLUGIN_SDK_DIR)\plugin_SA;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA\enums;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA\rw;$(PLUGIN_SDK_DIR)\safetyhook;$(DXSDK_DIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -75,7 +75,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>plugin.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>plugin.lib;d3d9.lib;d3dx9.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib;$(DXSDK_DIR)\Lib\x86;$(PLUGIN_SDK_DIR)\shared\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>..\output\asi\CheatMenuSA.lib</ImportLibrary>
     </Link>
@@ -88,7 +88,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;_USE_MATH_DEFINES;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;DEBUG;GTASA;PLUGIN_SGV_10US;RW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\render;..\source\ui;..\source\features;..\source\hooks;..\source\utils;$(PLUGIN_SDK_DIR)\shared;$(PLUGIN_SDK_DIR)\shared\game;$(PLUGIN_SDK_DIR)\plugin_SA;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA\enums;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA\rw;$(PLUGIN_SDK_DIR)\safetyhook;$(DXSDK_DIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\source;..\source\core;..\source\render;..\source\ui;..\source\features;..\source\hooks;..\source\utils;..\source\bridge;$(PLUGIN_SDK_DIR)\shared;$(PLUGIN_SDK_DIR)\shared\game;$(PLUGIN_SDK_DIR)\plugin_SA;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA\enums;$(PLUGIN_SDK_DIR)\plugin_SA\game_SA\rw;$(PLUGIN_SDK_DIR)\safetyhook;$(DXSDK_DIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -97,7 +97,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>plugin_d.lib;d3d9.lib;d3dx9d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>plugin_d.lib;d3d9.lib;d3dx9d.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib;$(DXSDK_DIR)\Lib\x86;$(PLUGIN_SDK_DIR)\shared\bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>..\output\asi\CheatMenuSA.lib</ImportLibrary>
     </Link>
@@ -117,6 +117,10 @@
     <ClCompile Include="..\source\features\visuals\WorldEsp.cpp" />
     <ClCompile Include="..\source\features\movement\Airbrake.cpp" />
     <ClCompile Include="..\source\features\player\PlayerCheats.cpp" />
+    <ClCompile Include="..\source\features\display\DisplayTweaks.cpp" />
+    <ClCompile Include="..\source\features\diagnostics\Logger.cpp" />
+    <ClCompile Include="..\source\features\diagnostics\OffsetScanner.cpp" />
+    <ClCompile Include="..\source\bridge\McpBridge.cpp" />
     <ClCompile Include="..\source\features\FeatureManager.cpp" />
     <ClCompile Include="..\source\hooks\Hooks.cpp" />
     <ClCompile Include="..\source\utils\MathUtils.cpp" />
@@ -135,6 +139,10 @@
     <ClInclude Include="..\source\features\visuals\WorldEsp.h" />
     <ClInclude Include="..\source\features\movement\Airbrake.h" />
     <ClInclude Include="..\source\features\player\PlayerCheats.h" />
+    <ClInclude Include="..\source\features\display\DisplayTweaks.h" />
+    <ClInclude Include="..\source\features\diagnostics\Logger.h" />
+    <ClInclude Include="..\source\features\diagnostics\OffsetScanner.h" />
+    <ClInclude Include="..\source\bridge\McpBridge.h" />
     <ClInclude Include="..\source\features\FeatureManager.h" />
     <ClInclude Include="..\source\hooks\Hooks.h" />
     <ClInclude Include="..\source\utils\MathUtils.h" />

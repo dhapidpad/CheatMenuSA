@@ -72,13 +72,34 @@ struct Config
 		bool auto_flip_car = true;
 	} player;
 
+	struct Display
+	{
+		bool  borderless_fullscreen = false;
+		bool  custom_fov_enabled = false;
+		float custom_fov = 75.0f; // default is 70.0f
+		bool  draw_distance_enabled = false;
+		float draw_distance_mult = 1.5f; // 1.0x to 4.0x
+		bool  fps_limiter_disabled = true;
+		int   target_fps = 60; // 30, 60, 90, 120
+		int   aspect_ratio_mode = 0; // 0 = Auto, 1 = 16:9, 2 = 21:9 Ultrawide, 3 = 4:3
+	} display;
+
+	struct Debug
+	{
+		bool  log_to_file = true;
+		bool  auto_scroll_logs = true;
+		int   log_filter_level = 0; // 0 = all
+		bool  mcp_server_enabled = true;
+		int   mcp_server_port = 13337;
+	} debug;
+
 	struct UI
 	{
-		float window_x = 80.0f;
-		float window_y = 80.0f;
-		float window_w = 640.0f;
-		float window_h = 440.0f;
-		int   active_tab = 0; // 0: Combat, 1: Visuals, 2: Movement, 3: Player, 4: Teleport & Actions
+		float window_x = 60.0f;
+		float window_y = 60.0f;
+		float window_w = 700.0f;
+		float window_h = 470.0f;
+		int   active_tab = 0; // 0: Combat, 1: Visuals, 2: Movement, 3: Player, 4: Actions, 5: Display, 6: Offsets, 7: Logs & MCP
 		bool  menu_open = true;
 	} ui;
 };
