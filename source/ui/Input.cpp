@@ -47,11 +47,20 @@ void Input::update()
 	}
 	m_f11WasDown = f11Down;
 
-	// Panic toggle (VK_DELETE)
+	// Panic toggle (VK_DELETE) or Eject (SHIFT + VK_DELETE)
 	bool delDown = (GetAsyncKeyState(VK_DELETE) & 0x8000) != 0;
 	if (delDown && !m_delWasDown)
 	{
-		g_isPanic = !g_isPanic;
+		bool shiftDown = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+		if (shiftDown)
+		{
+			UnloadCheatMenu();
+			return;
+		}
+		else
+		{
+			g_isPanic = !g_isPanic;
+		}
 	}
 	m_delWasDown = delDown;
 }

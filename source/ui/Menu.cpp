@@ -889,25 +889,30 @@ void Menu::tab_logs(float x, float y, float w, float h)
 
 	if (mcpActive)
 	{
-		g_Renderer->bordered_rect(x + 12.0f, topY, 230.0f, 26.0f, color::CardBg, color::SuccessGreen, 1.0f);
-		g_Renderer->text_small(x + 18.0f, topY + 7.0f, DT_LEFT, color::SuccessGreen, "MCP SERVER: 127.0.0.1:%d (%d Client)", port, clients);
+		g_Renderer->bordered_rect(x + 12.0f, topY, 150.0f, 26.0f, color::CardBg, color::SuccessGreen, 1.0f);
+		g_Renderer->text_small(x + 18.0f, topY + 7.0f, DT_LEFT, color::SuccessGreen, "MCP: :%d (%d Cli)", port, clients);
 	}
 	else
 	{
 		g_Renderer->bordered_rect(x + 12.0f, topY, 150.0f, 26.0f, color::CardBg, color::HealthRed, 1.0f);
-		g_Renderer->text_small(x + 18.0f, topY + 7.0f, DT_LEFT, color::HealthRed, "MCP SERVER: OFFLINE");
+		g_Renderer->text_small(x + 18.0f, topY + 7.0f, DT_LEFT, color::HealthRed, "MCP: OFFLINE");
 	}
 
-	if (button(x + 250.0f, topY, 110.0f, 26.0f, "XOA LOG", color::WarningYellow, "Xoa toan bo nhat ky."))
+	if (button(x + 170.0f, topY, 80.0f, 26.0f, "XOA LOG", color::WarningYellow, "Xoa toan bo nhat ky."))
 	{
 		Logger::Clear();
 		set_status("Da xoa log!");
 	}
 
-	if (button(x + 368.0f, topY, 130.0f, 26.0f, "LUU FILE LOG", color::AccentCyan, "Ghi nhat ky ra file CheatMenu.log"))
+	if (button(x + 258.0f, topY, 86.0f, 26.0f, "LUU LOG", color::AccentCyan, "Ghi nhat ky ra file CheatMenu.log"))
 	{
 		Logger::ExportToFile("CheatMenu.log");
 		set_status("Da luu log ra CheatMenu.log");
+	}
+
+	if (button(x + 352.0f, topY, 116.0f, 26.0f, "EJECT DLL", color::DangerRed, "Go sach hook va thoat DLL an toan khoi game (Shift+Delete)."))
+	{
+		UnloadCheatMenu();
 	}
 
 	// Console Window

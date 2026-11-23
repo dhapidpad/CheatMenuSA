@@ -246,6 +246,11 @@ std::string McpBridge::process_json_request(const std::string& req)
 	{
 		return "{\"status\":\"ok\",\"service\":\"CheatMenuSA-MCP\",\"version\":\"2.0\",\"game\":\"GTA San Andreas\"}\n";
 	}
+	else if (action == "unload" || action == "eject")
+	{
+		UnloadCheatMenu();
+		return "{\"status\":\"ok\",\"message\":\"CheatMenuSA is unloading and ejecting from game.\"}\n";
+	}
 	else if (action == "get_player_state")
 	{
 		std::lock_guard<std::mutex> lock(m_snapshotMutex);

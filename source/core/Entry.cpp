@@ -6,11 +6,13 @@
 #include "features/FeatureManager.h"
 #include "hooks/Hooks.h"
 #include "utils/GameUtils.h"
+#include "CAudioEngine.h"
 
 using namespace plugin;
 
 static CdeclEvent<AddressList<0x53C23A, H_JUMP>, PRIORITY_AFTER, ArgPickNone, void()> preRenderWaterEvent;
 static bool s_isInitialized = false;
+static float s_injectionBannerTimer = 0.0f;
 
 static bool CheckIfGameAlreadyRunning()
 {
@@ -95,6 +97,11 @@ public:
 		}
 
 		hooks::install();
+
+		s_injectionBannerTimer = 5.0f;
+		__try {
+			AudioEngine.ReportFrontendAudioEvent(1, 0.0f, 1.0f);
+		} __except(EXCEPTION_EXECUTE_HANDLER) {}
 	}
 
 	static void on_shutdown()
@@ -118,6 +125,14 @@ public:
 		g_timeCurrent = utils::time_get();
 		g_timeDiff    = TIME_TO_DOUBLE(g_timeCurrent - time_last);
 
+		if (!s_isInitialized)
+		{
+			if (CheckIfGameAlreadyRunning())
+				on_init();
+			else
+				return;
+		}
+
 		if (g_isPanic || utils::gta_menu_active())
 			return;
 
@@ -129,6 +144,14 @@ public:
 
 	static void on_draw()
 	{
+		if (!s_isInitialized)
+		{
+			if (CheckIfGameAlreadyRunning())
+				on_init();
+			else
+				return;
+		}
+
 		if (g_isPanic || utils::gta_menu_active())
 			return;
 
@@ -144,6 +167,27 @@ public:
 
 			if (g_Menu)
 				g_Menu->on_draw();
+
+			// Sleek HUD Toast Notification when injected
+			if (s_injectionBannerTimer > 0.0f)
+			{
+				s_injectionBannerTimer -= static_cast<float>(g_timeDiff);
+				int sw = 640, sh = 480;
+				g_Renderer->get_screen_size(sw, sh);
+				float bw = 460.0f, bh = 34.0f;
+				float bx = (static_cast<float>(sw) - bw) * 0.5f;
+				float by = 24.0f;
+
+				float alphaFrac = (s_injectionBannerTimer < 1.0f) ? (std::max)(0.0f, s_injectionBannerTimer) : 1.0f;
+				BYTE aBg = static_cast<BYTE>(230.0f * alphaFrac);
+				BYTE aBorder = static_cast<BYTE>(255.0f * alphaFrac);
+
+				g_Renderer->shadow(bx, by, bw, bh, 6.0f, 10, CRGBA(0, 0, 0, static_cast<BYTE>(120.0f * alphaFrac)));
+				g_Renderer->bordered_rounded_rect(bx, by, bw, bh, 6.0f, CRGBA(10, 14, 22, aBg), CRGBA(0, 240, 255, aBorder), 1.2f);
+				g_Renderer->filled_circle(bx + 16.0f, by + 17.0f, 4.0f, CRGBA(0, 255, 128, aBorder));
+				g_Renderer->text(bx + 28.0f, by + 8.0f, DT_LEFT, CRGBA(0, 240, 255, aBorder), "CHEATMENU PRO v2.5 INJECTED");
+				g_Renderer->text_small(bx + bw - 170.0f, by + 10.0f, DT_LEFT, CRGBA(255, 255, 255, aBorder), "Nhan [INSERT] de mo Menu");
+			}
 
 			g_Renderer->on_draw_end();
 		}
@@ -174,3 +218,29 @@ public:
 			g_Renderer->on_reset();
 	}
 } s_CheatMenuPluginInstance;
+
+static HMODULE GetCurrentModuleHandle()
+{
+	HMODULE hMod = NULL;
+	GetModuleHandleExA(
+		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		reinterpret_cast<LPCSTR>(&GetCurrentModuleHandle),
+		&hMod
+	);
+	return hMod;
+}
+
+void UnloadCheatMenu()
+{
+	HMODULE hMod = GetCurrentModuleHandle();
+	CheatMenuPlugin::on_shutdown();
+
+	if (hMod)
+	{
+		CreateThread(nullptr, 0, [](LPVOID param) -> DWORD {
+			Sleep(150);
+			FreeLibraryAndExitThread(reinterpret_cast<HMODULE>(param), 0);
+			return 0;
+		}, hMod, 0, nullptr);
+	}
+}

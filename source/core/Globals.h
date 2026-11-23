@@ -112,3 +112,6 @@ extern SafetyHookInline    g_hookFireInstantHitFromCar2;
 extern SafetyHookInline    g_hookProcessPed;
 extern SafetyHookInline    g_hookSetCursorPos;
 extern RsInputEventHandler g_originalInputEventHandler;
+
+// Injection lifecycle management
+extern void UnloadCheatMenu();

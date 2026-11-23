@@ -74,6 +74,10 @@ def main():
         res = send_command({"action": "get_logs", "count": count})
         print(json.dumps(res, indent=2))
 
+    elif cmd == "unload" or cmd == "eject":
+        res = send_command({"action": "unload"})
+        print(json.dumps(res, indent=2))
+
     elif cmd == "cheat":
         if len(sys.argv) < 4:
             print("Usage: python mcp_client.py cheat <name> <true/false>")

@@ -9,7 +9,8 @@
 | Phím Tắt | Chức Năng | Ghi Chú |
 | :--- | :--- | :--- |
 | **`INSERT`** hoặc **`F11`** | **Mở / Đóng Menu Cheat** | Hiển thị con trỏ chuột mượt mà, tạm khóa input game |
-| **`DELETE`** | **Unload Mod an toàn** | Giải phóng hook, đóng socket MCP và dọn dẹp bộ nhớ |
+| **`DELETE`** | **Panic Switch (Tạm ẩn)** | Tạm ẩn toàn bộ giao diện và tạm tắt tính năng cheat |
+| **`SHIFT + DELETE`** | **Eject / Unload DLL an toàn** | Gỡ bỏ sạch sẽ mọi hook bộ nhớ và thoát DLL khỏi game |
 | **`RSHIFT`** (Right Shift) | **Bật / Tắt Airbrake (Bay xuyên tường)** | Bay tự do theo hướng camera 6-DOF |
 | **`W / A / S / D`** | **Di chuyển khi Bay (Airbrake)** | Tiến, lùi, sang trái, sang phải |
 | **`SPACE` / `LSHIFT`** | **Bay Lên / Bay Xuống (Airbrake)** | Nâng độ cao hoặc hạ độ cao mượt mà |
@@ -192,4 +193,26 @@ python scripts/mcp_client.py cheat combat.infinite_ammo true
 3. Nhấp chuột phải vào `gta_sa.exe` -> Chọn **Miscellaneous** -> **Inject DLL...**
 4. Chọn file `CheatMenuSA.dll`.
 5. Menu sẽ lập tức kích hoạt trong game!
+
+---
+
+### ✨ DẤU HIỆU NHẬN BIẾT INJECT THÀNH CÔNG:
+Ngay khi quá trình Inject hoàn tất:
+1. **Âm thanh Native Chime:** Game sẽ phát ra một âm thanh thông báo xác nhận.
+2. **Neon Banner Toast:** Một biểu ngữ thông báo màu xanh dạ quang sẽ hiển thị ở đỉnh màn hình trong 5 giây:
+   `[● CHEATMENU PRO v2.5 INJECTED | Nhấn [INSERT] để mở Menu]`
+3. Nhấn **`INSERT`** hoặc **`F11`** để bung toàn bộ giao diện điều khiển!
+
+---
+
+### 🛡️ CÁCH EJECT / THOÁT DLL KHỎI GAME (3 CÁCH AN TOÀN):
+Khi bạn chơi xong và muốn gỡ bỏ hoàn toàn DLL khỏi game mà không cần tắt game:
+- **Cách 1 (Phím tắt):** Nhấn tổ hợp phím **`SHIFT + DELETE`**.
+- **Cách 2 (Trên giao diện Menu):** Vào Tab **`[!] LOGS & MCP`** -> Bấm nút màu đỏ **`EJECT DLL`**.
+- **Cách 3 (Bằng dòng lệnh Python):**
+  ```bash
+  python scripts/mcp_client.py unload
+  ```
+Hệ thống sẽ tự động unhook các hàm Direct3D/RenderWare, đóng socket TCP, hủy cấp phát bộ nhớ và gọi `FreeLibraryAndExitThread` để rút DLL an toàn 100%!
+
 
