@@ -12,6 +12,15 @@ using namespace plugin;
 static CdeclEvent<AddressList<0x53C23A, H_JUMP>, PRIORITY_AFTER, ArgPickNone, void()> preRenderWaterEvent;
 static bool s_isInitialized = false;
 
+static bool CheckIfGameAlreadyRunning()
+{
+	__try {
+		if (*reinterpret_cast<void**>(0xC97C28) != nullptr || RsGlobal.maximumWidth > 0)
+			return true;
+	} __except(EXCEPTION_EXECUTE_HANDLER) {}
+	return false;
+}
+
 class CheatMenuPlugin
 {
 public:
@@ -39,12 +48,10 @@ public:
 		}
 
 		// Support for DLL Injection while game is already running (Late / Runtime Injection)
-		__try {
-			if (*(void**)0xC97C28 != nullptr || RsGlobal.maximumWidth > 0)
-			{
-				on_init();
-			}
-		} __except(EXCEPTION_EXECUTE_HANDLER) {}
+		if (CheckIfGameAlreadyRunning())
+		{
+			on_init();
+		}
 	}
 
 	~CheatMenuPlugin()
