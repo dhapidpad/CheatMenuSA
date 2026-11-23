@@ -7,11 +7,12 @@
 
 class Menu
 {
-	bool      m_isDragging;
-	CVector2D m_dragOffset;
+	bool        m_isDragging;
+	CVector2D   m_dragOffset;
 	std::string m_activeTooltip;
 	std::string m_statusMessage;
 	float       m_statusTimer;
+	float       m_tabIndicatorY;
 
 public:
 	Menu();
@@ -43,6 +44,7 @@ private:
 
 	// Controls
 	void section_header(float x, float y, float w, const char* title);
+	void render_esp_preview(float x, float y, float w, float h);
 	bool checkbox(float x, float y, const char* label, bool& val, const char* tooltip = nullptr);
 	bool slider_float(float x, float y, float w, const char* label, float& val, float min, float max, const char* format = "%.1f", const char* tooltip = nullptr);
 	bool combobox(float x, float y, float w, const char* label, int& val, const std::vector<std::string>& items, const char* tooltip = nullptr);

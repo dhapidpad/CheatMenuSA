@@ -6,13 +6,22 @@
 #include "features/FeatureManager.h"
 #include "features/display/DisplayTweaks.h"
 #include "bridge/McpBridge.h"
+#include "CAudioEngine.h"
+
+static void PlayMenuSound(int id = 3)
+{
+	__try {
+		AudioEngine.ReportFrontendAudioEvent(id, 0.0f, 1.0f);
+	} __except(EXCEPTION_EXECUTE_HANDLER) {}
+}
 
 Menu::Menu()
 	: m_isDragging(false),
 	  m_dragOffset(0.0f, 0.0f),
 	  m_activeTooltip(""),
 	  m_statusMessage("Ready"),
-	  m_statusTimer(0.0f)
+	  m_statusTimer(0.0f),
+	  m_tabIndicatorY(0.0f)
 {
 }
 
@@ -74,11 +83,11 @@ void Menu::render_window()
 	}
 
 	// Main window drop shadow & background
-	g_Renderer->filled_rect(x + 4.0f, y + 4.0f, w, h, CRGBA(0, 0, 0, 100));
-	g_Renderer->bordered_rect(x, y, w, h, color::BgDark, color::CardBorder, 1.0f);
+	g_Renderer->shadow(x, y, w, h, 8.0f, 14, color::Shadow);
+	g_Renderer->bordered_rounded_rect(x, y, w, h, 8.0f, color::BgDark, color::CardBorder, 1.2f);
 
-	// Top accent line
-	g_Renderer->gradient_horizontal(x, y, w, 2.0f, color::AccentCyan, color::AccentBlue);
+	// Top accent gradient line
+	g_Renderer->gradient_horizontal(x + 8.0f, y + 2.0f, w - 16.0f, 2.0f, color::AccentCyan, color::AccentBlue);
 
 	// Sub-sections
 	render_header(x, y + 2.0f, w, headerH);
@@ -98,15 +107,17 @@ void Menu::render_header(float x, float y, float w, float h)
 	g_Renderer->text(x + 104.0f, y + 9.0f, DT_LEFT, color::TextWhite, "[SA-MP & OFFLINE]");
 
 	// Version Badge
-	g_Renderer->bordered_rect(x + 250.0f, y + 9.0f, 52.0f, 18.0f, color::CardBg, color::AccentCyan, 1.0f);
-	g_Renderer->text_small(x + 258.0f, y + 11.0f, DT_LEFT, color::AccentCyan, "v2.0 PRO");
+	g_Renderer->bordered_rounded_rect(x + 252.0f, y + 8.0f, 96.0f, 20.0f, 4.0f, color::CardBg, color::AccentCyan, 1.0f);
+	g_Renderer->text_small(x + 300.0f, y + 11.0f, DT_CENTER, color::AccentCyan, "PRO v2.5 AAA");
 
 	// Status indicator on right
-	const char* sampStatus = g_isSamp ? "SA-MP" : "SINGLEPLAYER";
-	g_Renderer->text_small(x + w - 160.0f, y + 11.0f, DT_LEFT, color::TextMuted, "MODE: %s", sampStatus);
+	const char* sampStatus = g_isSamp ? "SA-MP ONLINE" : "OFFLINE GSOCITY";
+	g_Renderer->filled_circle(x + w - 195.0f, y + 17.0f, 3.5f, g_isSamp ? color::SuccessGreen : color::AccentCyan);
+	g_Renderer->text_small(x + w - 186.0f, y + 11.0f, DT_LEFT, color::TextDim, "%s", sampStatus);
 
-	// FPS Badge
-	g_Renderer->text_small(x + w - 50.0f, y + 11.0f, DT_LEFT, color::SuccessGreen, "%d FPS", static_cast<int>(CTimer::game_FPS));
+	// Live FPS Badge
+	g_Renderer->bordered_rounded_rect(x + w - 68.0f, y + 8.0f, 56.0f, 20.0f, 4.0f, color::CardBg, color::SuccessGreen, 1.0f);
+	g_Renderer->text_small(x + w - 40.0f, y + 11.0f, DT_CENTER, color::SuccessGreen, "%d FPS", static_cast<int>(CTimer::game_FPS));
 }
 
 void Menu::render_sidebar(float x, float y, float w, float h)
@@ -126,10 +137,22 @@ void Menu::render_sidebar(float x, float y, float w, float h)
 		"[!] LOGS & MCP"
 	};
 
-	const float tabH = 32.0f;
+	const float tabH = 34.0f;
+	float targetIndicatorY = y + 8.0f + (g_Config->ui.active_tab * (tabH + 3.0f));
+
+	// Smooth Lerp Transition for Active Tab
+	if (m_tabIndicatorY <= 0.0f)
+		m_tabIndicatorY = targetIndicatorY;
+	else
+		m_tabIndicatorY += (targetIndicatorY - m_tabIndicatorY) * 0.28f;
+
+	// Render Smooth Glowing Pill for Active Tab
+	g_Renderer->bordered_rounded_rect(x + 6.0f, m_tabIndicatorY, w - 12.0f, tabH, 5.0f, color::CardBg, color::CardBorder, 1.0f);
+	g_Renderer->filled_rounded_rect(x + 6.0f, m_tabIndicatorY, 3.5f, tabH, 2.0f, color::AccentCyan);
+
 	for (int i = 0; i < 8; ++i)
 	{
-		float tabY = y + 8.0f + (i * (tabH + 2.0f));
+		float tabY = y + 8.0f + (i * (tabH + 3.0f));
 		bool isCurrent = (g_Config->ui.active_tab == i);
 		bool hovered = g_Input->is_hovered(x + 6.0f, tabY, w - 12.0f, tabH);
 
@@ -137,33 +160,33 @@ void Menu::render_sidebar(float x, float y, float w, float h)
 		{
 			g_Config->ui.active_tab = i;
 			isCurrent = true;
+			PlayMenuSound(3);
 		}
 
 		if (isCurrent)
 		{
-			// Active tab highlight
-			g_Renderer->bordered_rect(x + 6.0f, tabY, w - 12.0f, tabH, color::CardBg, color::CardBorder, 1.0f);
-			g_Renderer->filled_rect(x + 6.0f, tabY, 3.0f, tabH, color::AccentCyan);
-			g_Renderer->text(x + 14.0f, tabY + 8.0f, DT_LEFT, color::AccentCyan, tabNames[i]);
+			g_Renderer->text(x + 16.0f, tabY + 9.0f, DT_LEFT, color::AccentCyan, tabNames[i]);
 		}
 		else
 		{
 			if (hovered)
 			{
-				g_Renderer->filled_rect(x + 6.0f, tabY, w - 12.0f, tabH, color::CardBg);
-				g_Renderer->text(x + 14.0f, tabY + 8.0f, DT_LEFT, color::TextWhite, tabNames[i]);
+				g_Renderer->filled_rounded_rect(x + 6.0f, tabY, w - 12.0f, tabH, 4.0f, color::CardHover);
+				g_Renderer->text(x + 16.0f, tabY + 9.0f, DT_LEFT, color::TextWhite, tabNames[i]);
 			}
 			else
 			{
-				g_Renderer->text(x + 14.0f, tabY + 8.0f, DT_LEFT, color::TextMuted, tabNames[i]);
+				g_Renderer->text(x + 16.0f, tabY + 9.0f, DT_LEFT, color::TextMuted, tabNames[i]);
 			}
 		}
 	}
 
 	// Hotkey reminder in sidebar bottom
-	g_Renderer->text_small(x + 10.0f, y + h - 50.0f, DT_LEFT, color::TextMuted, "TOGGLE: INSERT / F11");
-	g_Renderer->text_small(x + 10.0f, y + h - 35.0f, DT_LEFT, color::TextMuted, "PANIC:  DELETE");
-	g_Renderer->text_small(x + 10.0f, y + h - 20.0f, DT_LEFT, color::TextMuted, "AIRBRAKE: RSHIFT");
+	g_Renderer->bordered_rounded_rect(x + 8.0f, y + h - 68.0f, w - 16.0f, 60.0f, 4.0f, color::BgDark, color::CardBorder, 1.0f);
+	g_Renderer->text_small(x + 14.0f, y + h - 62.0f, DT_LEFT, color::AccentCyan, "HOTKEYS:");
+	g_Renderer->text_small(x + 14.0f, y + h - 46.0f, DT_LEFT, color::TextWhite, "INSERT / F11: Menu");
+	g_Renderer->text_small(x + 14.0f, y + h - 30.0f, DT_LEFT, color::WarningYellow, "RSHIFT: Airbrake");
+	g_Renderer->text_small(x + 14.0f, y + h - 16.0f, DT_LEFT, color::DangerRed, "DELETE: Panic Hide");
 }
 
 void Menu::render_content(float x, float y, float w, float h)
@@ -190,21 +213,26 @@ void Menu::render_footer(float x, float y, float w, float h)
 	// Display tooltip or current status
 	if (!m_activeTooltip.empty())
 	{
-		g_Renderer->text_small(x + 14.0f, y + 6.0f, DT_LEFT, color::AccentCyan, "> %s", m_activeTooltip.c_str());
+		g_Renderer->filled_circle(x + 12.0f, y + (h * 0.5f), 3.0f, color::AccentCyan);
+		g_Renderer->text_small(x + 20.0f, y + 6.0f, DT_LEFT, color::AccentCyan, "HUONG DAN:");
+		g_Renderer->text_small(x + 94.0f, y + 6.0f, DT_LEFT, color::TextWhite, "%s", m_activeTooltip.c_str());
 	}
 	else if (m_statusTimer > 0.0f)
 	{
-		g_Renderer->text_small(x + 14.0f, y + 6.0f, DT_LEFT, color::SuccessGreen, "[!] %s", m_statusMessage.c_str());
+		g_Renderer->filled_circle(x + 12.0f, y + (h * 0.5f), 3.0f, color::SuccessGreen);
+		g_Renderer->text_small(x + 20.0f, y + 6.0f, DT_LEFT, color::SuccessGreen, "THONG BAO:");
+		g_Renderer->text_small(x + 94.0f, y + 6.0f, DT_LEFT, color::TextWhite, "%s", m_statusMessage.c_str());
 	}
 	else
 	{
-		g_Renderer->text_small(x + 14.0f, y + 6.0f, DT_LEFT, color::TextMuted, "Tip: Hover over any option to view details.");
+		g_Renderer->filled_circle(x + 12.0f, y + (h * 0.5f), 3.0f, color::SuccessGreen);
+		g_Renderer->text_small(x + 20.0f, y + 6.0f, DT_LEFT, color::TextMuted, "TRANG THAI: SAN SANG (READY) | RE CHUOT VAO MUC BAT KY DE XEM HUONG DAN CHI TIET");
 	}
 
 	// Watermark right
 	if (!g_watermarks.empty())
 	{
-		g_Renderer->text_small(x + w - 130.0f, y + 6.0f, DT_LEFT, color::TextMuted, g_watermarks[g_watermarkIndex].c_str());
+		g_Renderer->text_small(x + w - 120.0f, y + 6.0f, DT_LEFT, color::TextMuted, g_watermarks[g_watermarkIndex].c_str());
 	}
 }
 
@@ -215,51 +243,74 @@ void Menu::render_cursor()
 
 void Menu::section_header(float x, float y, float w, const char* title)
 {
-	g_Renderer->text(x, y, DT_LEFT, color::AccentCyan, title);
-	g_Renderer->line(x, y + 18.0f, x + w, y + 18.0f, color::CardBorder);
+	g_Renderer->filled_circle(x + 4.0f, y + 6.0f, 3.0f, color::AccentCyan);
+	g_Renderer->text(x + 12.0f, y, DT_LEFT, color::AccentCyan, title);
+	g_Renderer->line(x + 12.0f, y + 18.0f, x + w, y + 18.0f, color::CardBorder, 1.0f);
 }
 
 bool Menu::checkbox(float x, float y, const char* label, bool& val, const char* tooltip)
 {
-	const float boxSize = 16.0f;
-	const float totalW = 200.0f;
-	bool hovered = g_Input->is_hovered(x, y, totalW, boxSize);
+	const float switchW = 34.0f;
+	const float switchH = 16.0f;
+	const float totalW = 280.0f;
+	const float totalH = 20.0f;
+
+	bool hovered = g_Input->is_hovered(x, y, totalW, totalH);
 
 	if (hovered && tooltip)
 		m_activeTooltip = tooltip;
 
 	if (hovered && g_Input->mouse_clicked())
+	{
 		val = !val;
+		PlayMenuSound(1);
+	}
 
-	// Checkbox square
-	g_Renderer->bordered_rect(x, y, boxSize, boxSize, color::CardBg, hovered ? color::AccentCyan : color::CardBorder, 1.0f);
+	// Toggle Switch Pill Track
 	if (val)
 	{
-		g_Renderer->filled_rect(x + 3.0f, y + 3.0f, boxSize - 6.0f, boxSize - 6.0f, color::AccentCyan);
+		g_Renderer->filled_rounded_rect(x, y + 2.0f, switchW, switchH, 8.0f, color::AccentCyan);
+		g_Renderer->rounded_border(x, y + 2.0f, switchW, switchH, 8.0f, color::AccentBlue, 1.0f);
+		// Thumb on the right
+		g_Renderer->filled_circle(x + switchW - 9.0f, y + 10.0f, 5.5f, color::TextWhite);
+		g_Renderer->text_small(x + switchW + 6.0f, y + 3.0f, DT_LEFT, color::AccentCyan, "ON");
+	}
+	else
+	{
+		g_Renderer->filled_rounded_rect(x, y + 2.0f, switchW, switchH, 8.0f, color::CardBg);
+		g_Renderer->rounded_border(x, y + 2.0f, switchW, switchH, 8.0f, hovered ? color::TextDim : color::CardBorder, 1.0f);
+		// Thumb on the left
+		g_Renderer->filled_circle(x + 9.0f, y + 10.0f, 5.5f, color::TextMuted);
+		g_Renderer->text_small(x + switchW + 6.0f, y + 3.0f, DT_LEFT, color::TextMuted, "OFF");
 	}
 
 	// Label
-	g_Renderer->text_small(x + boxSize + 8.0f, y + 2.0f, DT_LEFT, val ? color::TextWhite : (hovered ? color::TextWhite : color::TextDim), label);
+	CRGBA labelColor = hovered ? color::TextWhite : (val ? color::TextWhite : color::TextDim);
+	g_Renderer->text_small(x + switchW + 36.0f, y + 3.0f, DT_LEFT, labelColor, label);
+
 	return val;
 }
 
 bool Menu::slider_float(float x, float y, float w, const char* label, float& val, float min, float max, const char* format, const char* tooltip)
 {
-	const float sliderH = 8.0f;
-	const float totalH = 28.0f;
+	const float sliderH = 6.0f;
+	const float totalH = 32.0f;
 	bool hovered = g_Input->is_hovered(x, y, w, totalH);
 
 	if (hovered && tooltip)
 		m_activeTooltip = tooltip;
 
-	// Label and formatted value
+	// Label and formatted value pill
 	char valBuf[32];
 	sprintf_s(valBuf, format, val);
 	g_Renderer->text_small(x, y, DT_LEFT, hovered ? color::TextWhite : color::TextDim, label);
-	g_Renderer->text_small(x + w, y, DT_RIGHT, color::AccentCyan, valBuf);
 
-	float trackY = y + 16.0f;
-	bool trackHovered = g_Input->is_hovered(x, trackY - 2.0f, w, sliderH + 4.0f);
+	// Value Badge Pill
+	g_Renderer->bordered_rounded_rect(x + w - 52.0f, y - 2.0f, 52.0f, 16.0f, 4.0f, color::CardBg, color::AccentCyan, 1.0f);
+	g_Renderer->text_small(x + w - 26.0f, y, DT_CENTER, color::AccentCyan, valBuf);
+
+	float trackY = y + 18.0f;
+	bool trackHovered = g_Input->is_hovered(x, trackY - 4.0f, w, sliderH + 8.0f);
 
 	if (trackHovered && g_Input->mouse_down())
 	{
@@ -269,7 +320,7 @@ bool Menu::slider_float(float x, float y, float w, const char* label, float& val
 	}
 
 	// Slider track
-	g_Renderer->bordered_rect(x, trackY, w, sliderH, color::CardBg, color::CardBorder, 1.0f);
+	g_Renderer->bordered_rounded_rect(x, trackY, w, sliderH, 3.0f, color::BgDark, color::CardBorder, 1.0f);
 
 	// Filled progress
 	float ratio = std::clamp((val - min) / (max - min), 0.0f, 1.0f);
@@ -278,42 +329,54 @@ bool Menu::slider_float(float x, float y, float w, const char* label, float& val
 		g_Renderer->gradient_horizontal(x, trackY, w * ratio, sliderH, color::AccentCyan, color::AccentBlue);
 	}
 
+	// Glowing Knob / Thumb
+	float thumbX = x + (w * ratio);
+	float thumbR = trackHovered ? 7.0f : 5.5f;
+	g_Renderer->filled_circle(thumbX, trackY + 3.0f, thumbR, color::TextWhite);
+	g_Renderer->circle(thumbX, trackY + 3.0f, thumbR + 1.5f, color::AccentCyan, 18, 1.2f);
+
 	return true;
 }
 
 bool Menu::combobox(float x, float y, float w, const char* label, int& val, const std::vector<std::string>& items, const char* tooltip)
 {
-	const float boxH = 22.0f;
-	const float totalH = 38.0f;
+	const float boxH = 24.0f;
+	const float totalH = 42.0f;
 	bool hovered = g_Input->is_hovered(x, y, w, totalH);
 
 	if (hovered && tooltip)
 		m_activeTooltip = tooltip;
 
-	g_Renderer->text_small(x, y, DT_LEFT, color::TextDim, label);
+	g_Renderer->text_small(x, y, DT_LEFT, hovered ? color::TextWhite : color::TextDim, label);
 
 	float boxY = y + 16.0f;
-	g_Renderer->bordered_rect(x, boxY, w, boxH, color::CardBg, color::CardBorder, 1.0f);
+	g_Renderer->bordered_rounded_rect(x, boxY, w, boxH, 4.0f, color::CardBg, hovered ? color::AccentCyan : color::CardBorder, 1.0f);
 
 	if (val >= 0 && val < static_cast<int>(items.size()))
 	{
-		g_Renderer->text_small(x + 10.0f, boxY + 4.0f, DT_LEFT, color::AccentCyan, items[val].c_str());
+		g_Renderer->filled_circle(x + 10.0f, boxY + 12.0f, 3.0f, color::AccentCyan);
+		g_Renderer->text_small(x + 18.0f, boxY + 5.0f, DT_LEFT, color::AccentCyan, items[val].c_str());
 	}
 
 	// Left & right cycle arrows
-	bool leftClicked = g_Input->is_clicked(x + w - 36.0f, boxY, 16.0f, boxH);
-	bool rightClicked = g_Input->is_clicked(x + w - 18.0f, boxY, 16.0f, boxH);
+	bool leftHover = g_Input->is_hovered(x + w - 44.0f, boxY + 2.0f, 18.0f, boxH - 4.0f);
+	bool rightHover = g_Input->is_hovered(x + w - 22.0f, boxY + 2.0f, 18.0f, boxH - 4.0f);
 
-	g_Renderer->text_small(x + w - 32.0f, boxY + 4.0f, DT_LEFT, color::TextWhite, "<");
-	g_Renderer->text_small(x + w - 16.0f, boxY + 4.0f, DT_LEFT, color::TextWhite, ">");
+	g_Renderer->bordered_rounded_rect(x + w - 44.0f, boxY + 2.0f, 18.0f, boxH - 4.0f, 3.0f, leftHover ? color::CardHover : color::BgDark, color::CardBorder, 1.0f);
+	g_Renderer->bordered_rounded_rect(x + w - 22.0f, boxY + 2.0f, 18.0f, boxH - 4.0f, 3.0f, rightHover ? color::CardHover : color::BgDark, color::CardBorder, 1.0f);
 
-	if (leftClicked)
+	g_Renderer->text_small(x + w - 38.0f, boxY + 5.0f, DT_LEFT, leftHover ? color::AccentCyan : color::TextWhite, "<");
+	g_Renderer->text_small(x + w - 16.0f, boxY + 5.0f, DT_LEFT, rightHover ? color::AccentCyan : color::TextWhite, ">");
+
+	if (leftHover && g_Input->mouse_clicked())
 	{
 		val = (val - 1 + static_cast<int>(items.size())) % static_cast<int>(items.size());
+		PlayMenuSound(3);
 	}
-	else if (rightClicked)
+	else if (rightHover && g_Input->mouse_clicked())
 	{
 		val = (val + 1) % static_cast<int>(items.size());
+		PlayMenuSound(3);
 	}
 
 	return true;
@@ -327,13 +390,104 @@ bool Menu::button(float x, float y, float w, float h, const char* label, const C
 	if (hovered && tooltip)
 		m_activeTooltip = tooltip;
 
+	float pressOffset = (hovered && g_Input->mouse_down()) ? 1.0f : 0.0f;
 	CRGBA bg = hovered ? color::CardHover : color::CardBg;
 	CRGBA border = hovered ? accentColor : color::CardBorder;
 
-	g_Renderer->bordered_rect(x, y, w, h, bg, border, 1.0f);
-	g_Renderer->text(x + (w / 2.0f), y + (h / 2.0f) - 6.0f, DT_CENTER, hovered ? accentColor : color::TextWhite, label);
+	g_Renderer->bordered_rounded_rect(x, y + pressOffset, w, h, 4.0f, bg, border, 1.2f);
+	g_Renderer->text(x + (w / 2.0f), y + pressOffset + (h / 2.0f) - 6.0f, DT_CENTER, hovered ? accentColor : color::TextWhite, label);
+
+	if (clicked)
+	{
+		PlayMenuSound(3);
+	}
 
 	return clicked;
+}
+
+void Menu::render_esp_preview(float x, float y, float w, float h)
+{
+	g_Renderer->bordered_rounded_rect(x, y, w, h, 6.0f, CRGBA(10, 12, 19, 240), color::CardBorder, 1.0f);
+
+	// Preview title
+	g_Renderer->filled_circle(x + 12.0f, y + 14.0f, 3.0f, color::AccentCyan);
+	g_Renderer->text_small(x + 20.0f, y + 8.0f, DT_LEFT, color::TextWhite, "MO PHONG ESP TRUC QUAN (LIVE)");
+
+	float cx = x + (w * 0.5f);
+	float cy = y + 90.0f;
+
+	// Mannequin Head
+	g_Renderer->circle(cx, cy - 35.0f, 7.0f, color::AccentCyan, 18, 1.2f);
+
+	// Skeleton Bones (if enabled)
+	if (g_Config->visuals.esp_Skeleton)
+	{
+		// Spine & Neck
+		g_Renderer->line(cx, cy - 28.0f, cx, cy - 10.0f, color::AccentCyan, 1.5f);
+		g_Renderer->line(cx, cy - 10.0f, cx, cy + 8.0f, color::AccentCyan, 1.5f);
+
+		// Arms
+		g_Renderer->line(cx, cy - 18.0f, cx - 18.0f, cy - 10.0f, color::AccentCyan, 1.2f);
+		g_Renderer->line(cx - 18.0f, cy - 10.0f, cx - 22.0f, cy + 4.0f, color::AccentCyan, 1.2f);
+		g_Renderer->line(cx, cy - 18.0f, cx + 18.0f, cy - 10.0f, color::AccentCyan, 1.2f);
+		g_Renderer->line(cx + 18.0f, cy - 10.0f, cx + 22.0f, cy + 4.0f, color::AccentCyan, 1.2f);
+
+		// Legs
+		g_Renderer->line(cx, cy + 8.0f, cx - 12.0f, cy + 28.0f, color::AccentCyan, 1.2f);
+		g_Renderer->line(cx - 12.0f, cy + 28.0f, cx - 14.0f, cy + 44.0f, color::AccentCyan, 1.2f);
+		g_Renderer->line(cx, cy + 8.0f, cx + 12.0f, cy + 28.0f, color::AccentCyan, 1.2f);
+		g_Renderer->line(cx + 12.0f, cy + 28.0f, cx + 14.0f, cy + 44.0f, color::AccentCyan, 1.2f);
+	}
+
+	float boxW = 54.0f;
+	float boxH = 92.0f;
+	float boxX = cx - (boxW * 0.5f);
+	float boxY = cy - 45.0f;
+
+	// Box ESP
+	if (g_Config->visuals.esp_BoxType == 1)
+	{
+		g_Renderer->border_only(boxX, boxY, boxW, boxH, color::AccentCyan, 1.2f);
+	}
+	else if (g_Config->visuals.esp_BoxType == 2)
+	{
+		g_Renderer->corner_box(boxX, boxY, boxW, boxH, color::AccentCyan, 8.0f, 1.5f);
+	}
+
+	// Health Bar
+	if (g_Config->visuals.esp_Health)
+	{
+		g_Renderer->filled_rect(boxX - 6.0f, boxY, 3.0f, boxH, color::BgDark);
+		g_Renderer->gradient_vertical(boxX - 6.0f, boxY + 12.0f, 3.0f, boxH - 12.0f, color::SuccessGreen, color::WarningYellow);
+	}
+
+	// Armor Bar
+	if (g_Config->visuals.esp_Armor)
+	{
+		g_Renderer->filled_rect(boxX - 11.0f, boxY, 3.0f, boxH, color::BgDark);
+		g_Renderer->filled_rect(boxX - 11.0f, boxY + 30.0f, 3.0f, boxH - 30.0f, color::AccentBlue);
+	}
+
+	// Weapon Tag
+	if (g_Config->visuals.esp_Weapon)
+	{
+		g_Renderer->text_small(cx, boxY - 14.0f, DT_CENTER, color::WarningYellow, "M4 Carbine");
+	}
+
+	// Distance Tag
+	if (g_Config->visuals.esp_Distance)
+	{
+		g_Renderer->text_small(cx, boxY + boxH + 4.0f, DT_CENTER, color::TextWhite, "28m");
+	}
+
+	// Snapline
+	if (g_Config->visuals.esp_Snapline)
+	{
+		g_Renderer->line(cx, y + h - 18.0f, cx, boxY + boxH, color::AccentCyan, 1.0f);
+	}
+
+	// Subtitle
+	g_Renderer->text_small(x + (w * 0.5f), y + h - 14.0f, DT_CENTER, color::TextMuted, "[THOI GIAN THUC: CAP NHAT THEO TOGGLE]");
 }
 
 // ---------------- TAB 0: COMBAT ----------------
@@ -394,6 +548,9 @@ void Menu::tab_visuals(float x, float y, float w, float h)
 	checkbox(col2_x, y + 88.0f, "Nearby Vehicles ESP", g_Config->visuals.esp_Vehicles, "Shows positions, models, and HP of nearby cars.");
 	checkbox(col2_x, y + 112.0f, "Unfinished Graffiti ESP", g_Config->visuals.esp_Graffiti, "Marks uncompleted gang tags in the game world.");
 	checkbox(col2_x, y + 136.0f, "Collectibles ESP", g_Config->visuals.esp_Collectibles, "Shows oysters, horseshoes, and photo snapshots.");
+
+	// Interactive Live ESP Mannequin Preview Widget
+	render_esp_preview(col2_x, y + 168.0f, col_w, 200.0f);
 }
 
 // ---------------- TAB 2: MOVEMENT ----------------
