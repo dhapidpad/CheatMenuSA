@@ -390,8 +390,8 @@ const char* utils::get_weapon_name(eWeaponType type)
 	case WEAPONTYPE_PISTOL_SILENCED:    return "Silenced 9mm";
 	case WEAPONTYPE_DESERT_EAGLE:       return "Desert Eagle";
 	case WEAPONTYPE_SHOTGUN:            return "Shotgun";
-	case WEAPONTYPE_SAWNOFF_SHOTGUN:    return "Sawn-Off Shotgun";
-	case WEAPONTYPE_SPAS12_SHOTGUN:     return "Combat Shotgun";
+	case WEAPONTYPE_SAWNOFF:            return "Sawn-Off Shotgun";
+	case WEAPONTYPE_SPAS12:             return "Combat Shotgun";
 	case WEAPONTYPE_MICRO_UZI:          return "Micro Uzi";
 	case WEAPONTYPE_MP5:                return "MP5";
 	case WEAPONTYPE_AK47:               return "AK-47";
@@ -399,9 +399,9 @@ const char* utils::get_weapon_name(eWeaponType type)
 	case WEAPONTYPE_TEC9:               return "Tec-9";
 	case WEAPONTYPE_COUNTRYRIFLE:       return "Rifle";
 	case WEAPONTYPE_SNIPERRIFLE:        return "Sniper Rifle";
-	case WEAPONTYPE_ROCKETLAUNCHER:     return "RPG";
-	case WEAPONTYPE_HEATSEEKING_ROCKETLAUNCHER: return "Heatseeking RPG";
-	case WEAPONTYPE_FLAMETHROWER:       return "Flamethrower";
+	case WEAPONTYPE_RLAUNCHER:          return "RPG";
+	case WEAPONTYPE_RLAUNCHER_HS:       return "Heatseeking RPG";
+	case WEAPONTYPE_FTHROWER:           return "Flamethrower";
 	case WEAPONTYPE_MINIGUN:            return "Minigun";
 	case WEAPONTYPE_GRENADE:            return "Grenade";
 	case WEAPONTYPE_TEARGAS:            return "Teargas";

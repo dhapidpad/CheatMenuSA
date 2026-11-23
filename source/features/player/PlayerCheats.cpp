@@ -41,21 +41,21 @@ void PlayerCheats::on_game_process()
 			local->CantBeKnockedOffBike = 1;
 		}
 
-		// Infinite Stamina & Oxygen
-		if (g_Config->movement.infinite_stamina)
-		{
-			local_info->m_fSprintStamina = 1000.0f;
-			local_info->m_fSprintEnergy = 1000.0f;
-		}
-
-		if (g_Config->movement.infinite_oxygen)
-		{
-			local_info->m_fUnderwaterStamina = 1000.0f;
-		}
-
 		auto local_data = &local_info->m_PlayerData;
 		if (local_data)
 		{
+			// Infinite Stamina & Oxygen
+			if (g_Config->movement.infinite_stamina)
+			{
+				local_data->m_fTimeCanRun = 1000.0f;
+				local_data->m_bPlayerSprintDisabled = false;
+			}
+
+			if (g_Config->movement.infinite_oxygen)
+			{
+				local_data->m_fBreath = 1000.0f;
+				local_data->m_bRequireHandleBreath = 0;
+			}
 			// Perfect accuracy & range
 			if (g_Config->combat.aim_PerfectAccuracy)
 			{
