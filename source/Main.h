@@ -44,6 +44,7 @@
 #define WEAPON_PARACHUTE WEAPONTYPE_PARACHUTE
 #endif
 #define m_nActiveWeaponSlot m_nSelectedWepSlot
+#define m_nTotalAmmo m_nAmmoTotal
 #define Normalise Normalize
 
 template<typename T>
