@@ -23,6 +23,13 @@ static bool CheckIfGameAlreadyRunning()
 	return false;
 }
 
+static void SafePlayAudio(int id)
+{
+	__try {
+		AudioEngine.ReportFrontendAudioEvent(id, 0.0f, 1.0f);
+	} __except(EXCEPTION_EXECUTE_HANDLER) {}
+}
+
 class CheatMenuPlugin
 {
 public:
@@ -99,9 +106,7 @@ public:
 		hooks::install();
 
 		s_injectionBannerTimer = 5.0f;
-		__try {
-			AudioEngine.ReportFrontendAudioEvent(1, 0.0f, 1.0f);
-		} __except(EXCEPTION_EXECUTE_HANDLER) {}
+		SafePlayAudio(1);
 	}
 
 	static void on_shutdown()
