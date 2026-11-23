@@ -1,94 +1,132 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\source\Hooked.cpp">
-      <Filter>CheatMenu\Hooked</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\Main.cpp">
-      <Filter>CheatMenu\Main</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\Renderer.cpp">
-      <Filter>CheatMenu\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\Utils.cpp">
-      <Filter>CheatMenu\Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\Debug.cpp">
-      <Filter>CheatMenu\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\Features.cpp">
-      <Filter>CheatMenu\Features</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\zgui\zgui.cc">
-      <Filter>3rd_party\zgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\Menu.cpp">
-      <Filter>CheatMenu\Menu</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="CheatMenu">
+    <Filter Include="core">
       <UniqueIdentifier>{8bbc2106-1d25-4aa0-8245-557a331977ed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CheatMenu\Hooked">
-      <UniqueIdentifier>{83dd9e64-bd72-40af-8871-b5577963ce2b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="CheatMenu\Main">
-      <UniqueIdentifier>{9d4f3acd-7cc8-4b15-bd7e-deb018df875a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="CheatMenu\Menu">
-      <UniqueIdentifier>{8acc1042-5eef-4553-9666-3ec94bba9f58}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="CheatMenu\Renderer">
+    <Filter Include="render">
       <UniqueIdentifier>{6d6c9948-52aa-450d-827f-f57fbff6543a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CheatMenu\Utils">
-      <UniqueIdentifier>{96a44e4b-b80e-4e43-ac89-240ed3f6e50d}</UniqueIdentifier>
+    <Filter Include="ui">
+      <UniqueIdentifier>{8acc1042-5eef-4553-9666-3ec94bba9f58}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CheatMenu\Debug">
-      <UniqueIdentifier>{4ec348e1-02b6-405d-a266-12e27cffea51}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="CheatMenu\Features">
+    <Filter Include="features">
       <UniqueIdentifier>{b7e9eccc-088d-4d87-aa6e-0f02d3b839cc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rd_party">
+    <Filter Include="features\combat">
+      <UniqueIdentifier>{83dd9e64-bd72-40af-8871-b5577963ce2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\visuals">
+      <UniqueIdentifier>{4ec348e1-02b6-405d-a266-12e27cffea51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\movement">
+      <UniqueIdentifier>{9d4f3acd-7cc8-4b15-bd7e-deb018df875a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="features\player">
       <UniqueIdentifier>{254b8ea1-47a8-44c9-b8fe-07f8c2ffdfa8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rd_party\zgui">
+    <Filter Include="hooks">
       <UniqueIdentifier>{0f0d9eec-fd62-4a5b-97f2-ae76a3df051d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{96a44e4b-b80e-4e43-ac89-240ed3f6e50d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source\Hooked.h">
-      <Filter>CheatMenu\Hooked</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Main.h">
-      <Filter>CheatMenu\Main</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Renderer.h">
-      <Filter>CheatMenu\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Utils.h">
-      <Filter>CheatMenu\Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Debug.h">
-      <Filter>CheatMenu\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Features.h">
-      <Filter>CheatMenu\Features</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\zgui\zgui.hh">
-      <Filter>3rd_party\zgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\Menu.h">
-      <Filter>CheatMenu\Menu</Filter>
-    </ClInclude>
+    <ClCompile Include="..\source\core\Globals.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\core\Entry.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\render\Renderer.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ui\Input.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\ui\Menu.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\combat\Aimbot.cpp">
+      <Filter>features\combat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\visuals\Esp.cpp">
+      <Filter>features\visuals</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\visuals\Radar.cpp">
+      <Filter>features\visuals</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\visuals\WorldEsp.cpp">
+      <Filter>features\visuals</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\movement\Airbrake.cpp">
+      <Filter>features\movement</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\player\PlayerCheats.cpp">
+      <Filter>features\player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\features\FeatureManager.cpp">
+      <Filter>features</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\hooks\Hooks.cpp">
+      <Filter>hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\utils\Math.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\utils\GameUtils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\source\snips.txt" />
-    <Text Include="..\source\todo.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Menu.cd" />
+    <ClInclude Include="..\source\core\Globals.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\core\Config.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\render\Colors.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\render\Renderer.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ui\Input.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\ui\Menu.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\combat\Aimbot.h">
+      <Filter>features\combat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\visuals\Esp.h">
+      <Filter>features\visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\visuals\Radar.h">
+      <Filter>features\visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\visuals\WorldEsp.h">
+      <Filter>features\visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\movement\Airbrake.h">
+      <Filter>features\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\player\PlayerCheats.h">
+      <Filter>features\player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\features\FeatureManager.h">
+      <Filter>features</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\hooks\Hooks.h">
+      <Filter>hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\utils\Math.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\utils\GameUtils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
