@@ -1,6 +1,6 @@
 #include "Airbrake.h"
 #include "GameUtils.h"
-#include "Math.h"
+#include "MathUtils.h"
 #include "Renderer.h"
 
 Airbrake::Airbrake()

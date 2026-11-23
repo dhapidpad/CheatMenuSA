@@ -1,5 +1,5 @@
 #include "GameUtils.h"
-#include "Math.h"
+#include "MathUtils.h"
 
 bool utils::is_bone_valid(std::size_t bone)
 {

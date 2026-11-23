@@ -1,6 +1,6 @@
 #include "Menu.h"
 #include "GameUtils.h"
-#include "Math.h"
+#include "MathUtils.h"
 
 Menu::Menu()
 	: m_isDragging(false),

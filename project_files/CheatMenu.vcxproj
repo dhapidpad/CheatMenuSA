@@ -119,7 +119,7 @@
     <ClCompile Include="..\source\features\player\PlayerCheats.cpp" />
     <ClCompile Include="..\source\features\FeatureManager.cpp" />
     <ClCompile Include="..\source\hooks\Hooks.cpp" />
-    <ClCompile Include="..\source\utils\Math.cpp" />
+    <ClCompile Include="..\source\utils\MathUtils.cpp" />
     <ClCompile Include="..\source\utils\GameUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -137,7 +137,7 @@
     <ClInclude Include="..\source\features\player\PlayerCheats.h" />
     <ClInclude Include="..\source\features\FeatureManager.h" />
     <ClInclude Include="..\source\hooks\Hooks.h" />
-    <ClInclude Include="..\source\utils\Math.h" />
+    <ClInclude Include="..\source\utils\MathUtils.h" />
     <ClInclude Include="..\source\utils\GameUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

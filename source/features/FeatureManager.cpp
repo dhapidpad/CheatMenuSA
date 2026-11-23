@@ -1,6 +1,6 @@
 #include "FeatureManager.h"
 #include "Renderer.h"
-#include "Math.h"
+#include "MathUtils.h"
 
 FeatureManager::FeatureManager()
 {
