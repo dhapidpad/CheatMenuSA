@@ -103,21 +103,32 @@ void Menu::render_header(float x, float y, float w, float h)
 	g_Renderer->line(x, y + h, x + w, y + h, color::CardBorder);
 
 	// Cheat Title & Logo
-	g_Renderer->text(x + 14.0f, y + 9.0f, DT_LEFT, color::AccentCyan, "CHEATMENU");
-	g_Renderer->text(x + 104.0f, y + 9.0f, DT_LEFT, color::TextWhite, "[SA-MP & OFFLINE]");
+	g_Renderer->filled_circle(x + 14.0f, y + (h * 0.5f), 4.0f, color::AccentCyan);
+	g_Renderer->text(x + 24.0f, y + 9.0f, DT_LEFT, color::AccentCyan, "CHEATMENU");
+	g_Renderer->text(x + 114.0f, y + 9.0f, DT_LEFT, color::TextWhite, "[SA-MP & OFFLINE]");
 
 	// Version Badge
-	g_Renderer->bordered_rounded_rect(x + 252.0f, y + 8.0f, 96.0f, 20.0f, 4.0f, color::CardBg, color::AccentCyan, 1.0f);
-	g_Renderer->text_small(x + 300.0f, y + 11.0f, DT_CENTER, color::AccentCyan, "PRO v2.5 AAA");
+	g_Renderer->bordered_rounded_rect(x + 254.0f, y + 7.0f, 96.0f, 20.0f, 4.0f, color::CardBg, color::AccentCyan, 1.0f);
+	g_Renderer->text_small(x + 302.0f, y + 10.0f, DT_CENTER, color::AccentCyan, "PRO v2.5 AAA");
 
 	// Status indicator on right
 	const char* sampStatus = g_isSamp ? "SA-MP ONLINE" : "OFFLINE GSOCITY";
-	g_Renderer->filled_circle(x + w - 195.0f, y + 17.0f, 3.5f, g_isSamp ? color::SuccessGreen : color::AccentCyan);
-	g_Renderer->text_small(x + w - 186.0f, y + 11.0f, DT_LEFT, color::TextDim, "%s", sampStatus);
+	g_Renderer->filled_circle(x + w - 212.0f, y + 17.0f, 3.5f, g_isSamp ? color::SuccessGreen : color::AccentCyan);
+	g_Renderer->text_small(x + w - 202.0f, y + 10.0f, DT_LEFT, color::TextDim, "%s", sampStatus);
 
 	// Live FPS Badge
-	g_Renderer->bordered_rounded_rect(x + w - 68.0f, y + 8.0f, 56.0f, 20.0f, 4.0f, color::CardBg, color::SuccessGreen, 1.0f);
-	g_Renderer->text_small(x + w - 40.0f, y + 11.0f, DT_CENTER, color::SuccessGreen, "%d FPS", static_cast<int>(CTimer::game_FPS));
+	g_Renderer->bordered_rounded_rect(x + w - 88.0f, y + 7.0f, 54.0f, 20.0f, 4.0f, color::CardBg, color::SuccessGreen, 1.0f);
+	g_Renderer->text_small(x + w - 61.0f, y + 10.0f, DT_CENTER, color::SuccessGreen, "%d FPS", static_cast<int>(CTimer::game_FPS));
+
+	// Close Button (X)
+	bool closeHover = g_Input->is_hovered(x + w - 28.0f, y + 7.0f, 20.0f, 20.0f);
+	g_Renderer->bordered_rounded_rect(x + w - 28.0f, y + 7.0f, 20.0f, 20.0f, 4.0f, closeHover ? color::DangerBg : color::CardBg, closeHover ? color::DangerRed : color::CardBorder, 1.0f);
+	g_Renderer->text_small(x + w - 18.0f, y + 10.0f, DT_CENTER, closeHover ? color::DangerRed : color::TextMuted, "X");
+	if (closeHover && g_Input->mouse_clicked())
+	{
+		g_Config->ui.menu_open = false;
+		PlayMenuSound(1);
+	}
 }
 
 void Menu::render_sidebar(float x, float y, float w, float h)
@@ -229,11 +240,8 @@ void Menu::render_footer(float x, float y, float w, float h)
 		g_Renderer->text_small(x + 20.0f, y + 6.0f, DT_LEFT, color::TextMuted, "TRANG THAI: SAN SANG (READY) | RE CHUOT VAO MUC BAT KY DE XEM HUONG DAN CHI TIET");
 	}
 
-	// Watermark right
-	if (!g_watermarks.empty())
-	{
-		g_Renderer->text_small(x + w - 120.0f, y + 6.0f, DT_LEFT, color::TextMuted, g_watermarks[g_watermarkIndex].c_str());
-	}
+	// Watermark / Keybinding badges on right
+	g_Renderer->text_small(x + w - 195.0f, y + 6.0f, DT_LEFT, color::TextMuted, "[INSERT] Menu  |  [SHIFT+DEL] Eject");
 }
 
 void Menu::render_cursor()
@@ -567,11 +575,13 @@ void Menu::tab_movement(float x, float y, float w, float h)
 	slider_float(col1_x, y + 90.0f, col_w, "Flight Speed", g_Config->movement.airbrake_speed, 40.0f, 500.0f, "%.0f", "Movement speed while airbrake is active.");
 
 	// Hotkey guide card
-	g_Renderer->bordered_rect(col1_x, y + 134.0f, col_w, 86.0f, color::CardBg, color::CardBorder, 1.0f);
-	g_Renderer->text_small(col1_x + 10.0f, y + 140.0f, DT_LEFT, color::AccentCyan, "AIRBRAKE CONTROLS:");
-	g_Renderer->text_small(col1_x + 10.0f, y + 154.0f, DT_LEFT, color::TextWhite, "RSHIFT: Toggle Flight On/Off");
-	g_Renderer->text_small(col1_x + 10.0f, y + 168.0f, DT_LEFT, color::TextWhite, "W / S / A / D: Move  |  SPACE / LSHIFT: Up/Down");
-	g_Renderer->text_small(col1_x + 10.0f, y + 182.0f, DT_LEFT, color::WarningYellow, "NUMPAD0: Slow-Motion Precision Mode");
+	g_Renderer->bordered_rounded_rect(col1_x, y + 134.0f, col_w, 86.0f, 6.0f, color::CardBg, color::CardBorder, 1.2f);
+	g_Renderer->filled_rounded_rect(col1_x, y + 134.0f, 3.5f, 86.0f, 2.0f, color::AccentCyan);
+	g_Renderer->filled_circle(col1_x + 14.0f, y + 147.0f, 3.0f, color::AccentCyan);
+	g_Renderer->text_small(col1_x + 22.0f, y + 142.0f, DT_LEFT, color::AccentCyan, "AIRBRAKE CONTROLS (PHIM TAT)");
+	g_Renderer->text_small(col1_x + 14.0f, y + 158.0f, DT_LEFT, color::TextWhite, "RSHIFT: Bat/Tat che do bay tu do");
+	g_Renderer->text_small(col1_x + 14.0f, y + 172.0f, DT_LEFT, color::TextWhite, "W / S / A / D: Di chuyen  |  SPACE / LSHIFT: Len/Xuong");
+	g_Renderer->text_small(col1_x + 14.0f, y + 186.0f, DT_LEFT, color::WarningYellow, "NUMPAD 0: Che do bay cham (Slow-mo can goc)");
 
 	// Column 2: Speedhack & Physics
 	section_header(col2_x, y + 14.0f, col_w, "PHYSICS & SPRINT");
@@ -782,9 +792,9 @@ void Menu::tab_actions(float x, float y, float w, float h)
 
 void Menu::tab_display(float x, float y, float w, float h)
 {
-	float col_w = (w - 36.0f) * 0.5f;
-	float col1_x = x + 12.0f;
-	float col2_x = col1_x + col_w + 12.0f;
+	float col1_x = x + 16.0f;
+	float col2_x = x + (w / 2.0f) + 8.0f;
+	float col_w = (w / 2.0f) - 24.0f;
 
 	// Column 1: Display & Window Mode
 	section_header(col1_x, y + 14.0f, col_w, "DISPLAY & WINDOW MODE");
@@ -844,13 +854,14 @@ void Menu::tab_offsets(float x, float y, float w, float h)
 	float tableW = w - 24.0f;
 	float tableH = h - 60.0f;
 
-	g_Renderer->filled_rect(x + 12.0f, tableY, tableW, 22.0f, color::BgHeader);
-	g_Renderer->bordered_rect(x + 12.0f, tableY, tableW, tableH, color::CardBg, color::CardBorder, 1.0f);
+	g_Renderer->bordered_rounded_rect(x + 12.0f, tableY, tableW, tableH, 6.0f, color::CardBg, color::CardBorder, 1.0f);
+	g_Renderer->filled_rounded_rect(x + 12.0f, tableY, tableW, 24.0f, 6.0f, color::BgHeader);
+	g_Renderer->line(x + 12.0f, tableY + 24.0f, x + 12.0f + tableW, tableY + 24.0f, color::CardBorder, 1.0f);
 
-	g_Renderer->text_small(x + 18.0f, tableY + 5.0f, DT_LEFT, color::AccentCyan, "CAU TRUC / OFFSET");
-	g_Renderer->text_small(x + 190.0f, tableY + 5.0f, DT_LEFT, color::AccentCyan, "DIA CHI (HEX)");
-	g_Renderer->text_small(x + 280.0f, tableY + 5.0f, DT_LEFT, color::AccentCyan, "GIA TRI HIEN TAI");
-	g_Renderer->text_small(x + 400.0f, tableY + 5.0f, DT_LEFT, color::AccentCyan, "MO TA");
+	g_Renderer->text_small(x + 20.0f, tableY + 6.0f, DT_LEFT, color::AccentCyan, "CAU TRUC / OFFSET");
+	g_Renderer->text_small(x + 190.0f, tableY + 6.0f, DT_LEFT, color::AccentCyan, "DIA CHI (HEX)");
+	g_Renderer->text_small(x + 280.0f, tableY + 6.0f, DT_LEFT, color::AccentCyan, "GIA TRI HIEN TAI");
+	g_Renderer->text_small(x + 390.0f, tableY + 6.0f, DT_LEFT, color::AccentCyan, "MO TA");
 
 	// Items
 	const auto& results = OffsetScanner::GetResults();
@@ -920,7 +931,8 @@ void Menu::tab_logs(float x, float y, float w, float h)
 	float boxW = w - 24.0f;
 	float boxH = h - 68.0f;
 
-	g_Renderer->bordered_rect(x + 12.0f, boxY, boxW, boxH, CRGBA(8, 10, 15, 240), color::CardBorder, 1.0f);
+	g_Renderer->bordered_rounded_rect(x + 12.0f, boxY, boxW, boxH, 6.0f, CRGBA(8, 10, 15, 240), color::CardBorder, 1.2f);
+	g_Renderer->filled_rounded_rect(x + 12.0f, boxY, 3.5f, boxH, 2.0f, color::AccentCyan);
 
 	auto entries = Logger::GetEntries();
 	if (entries.empty())
