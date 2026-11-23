@@ -165,9 +165,9 @@ bool utils::teleport_to_marker()
 	for (int i = 0; i < 175; ++i)
 	{
 		auto& trace = CRadar::ms_RadarTrace[i];
-		if (trace.m_nBlipDisplay != 0 && (trace.m_nBlipSprite == 41 || trace.m_nBlipType == 1))
+		if (trace.m_bInUse && (trace.m_nRadarSprite == 41 || trace.m_nBlipType == 1))
 		{
-			CVector targetPos = trace.m_vPosition;
+			CVector targetPos = trace.m_vecPos;
 			float groundZ = CWorld::FindGroundZForCoord(targetPos.x, targetPos.y);
 			if (groundZ > -100.0f)
 				targetPos.z = groundZ + 1.5f;
@@ -246,9 +246,10 @@ void utils::flip_vehicle()
 	auto veh = FindPlayerVehicle(-1, false);
 	if (veh && veh->m_matrix)
 	{
-		CVector pos = veh->m_matrix->pos;
-		pos.z += 1.0f;
-		veh->m_matrix->SetRotateZOnly(veh->m_matrix->GetHeading());
+		float heading = veh->GetHeading();
+		CVector pos = veh->GetPosition();
+		pos.z += 1.5f;
+		veh->m_matrix->SetRotateZOnly(heading);
 		veh->m_matrix->pos = pos;
 		veh->m_vecMoveSpeed.Set(0.0f, 0.0f, 0.0f);
 		veh->m_vecTurnSpeed.Set(0.0f, 0.0f, 0.0f);

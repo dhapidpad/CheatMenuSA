@@ -7,6 +7,9 @@
 
 namespace
 {
+#ifdef PI
+#undef PI
+#endif
 	constexpr float PI = 3.14159265358979f;
 
 	struct Pt { float x, y; };
@@ -70,7 +73,7 @@ namespace
 
 		const float cx[4] = { x + r,     x + w - r, x + w - r, x + r     };
 		const float cy[4] = { y + r,     y + r,     y + h - r, y + h - r };
-		const float a0[4] = { PI,        PI * 1.5f, 0.0f,      PI * 0.5f };
+		const float a0[4] = { PI, float(PI * 1.5f), 0.0f, float(PI * 0.5f) };
 
 		out.reserve(4 * (size_t)(segs + 1));
 		for (int c = 0; c < 4; ++c)

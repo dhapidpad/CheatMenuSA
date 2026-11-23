@@ -131,7 +131,7 @@ RsEventStatus __cdecl hooks::inputEventHandler(RsEvent event, void* param)
 			g_isPanic = !g_isPanic;
 		}
 
-		if (key_code == RsKeyCodes::rsINSERT || key_code == RsKeyCodes::rsF11)
+		if (key_code == RsKeyCodes::rsPADINS || key_code == VK_INSERT || key_code == VK_F11)
 		{
 			if (g_Menu)
 				g_Menu->toggle();
